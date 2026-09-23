@@ -1,0 +1,21 @@
+{
+  "name": "pokerlingo",
+  "private": true,
+  "packageManager": "pnpm@9.15.4",
+  "engines": { "node": ">=20.11.0" },
+  "scripts": {
+    "dev": "pnpm --filter @pokerlingo/web dev",
+    "build": "pnpm --filter @pokerlingo/web build",
+    "start": "pnpm --filter @pokerlingo/web start",
+    "lint": "pnpm --filter @pokerlingo/web lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "db:generate": "pnpm --filter @pokerlingo/db generate",
+    "db:migrate": "pnpm --filter @pokerlingo/db migrate",
+    "db:seed": "pnpm --filter @pokerlingo/db seed"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  }
+}
