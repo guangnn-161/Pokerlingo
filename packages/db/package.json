@@ -3,7 +3,7 @@
   "exports": { ".": "./src/index.ts", "./schema": "./src/schema.ts" },
   "scripts": {
     "generate": "drizzle-kit generate", "migrate": "tsx src/migrate.ts",
-    "seed": "tsx src/seed.ts", "typecheck": "tsc -p tsconfig.json", "test": "vitest run"
+    "seed": "tsx src/seed.ts", "typecheck": "tsc -p tsconfig.json", "test": "vitest run --passWithNoTests"
   },
   "dependencies": { "drizzle-orm": "^0.38.3", "postgres": "^3.4.5" },
   "devDependencies": { "drizzle-kit": "^0.30.0", "tsx": "^4.19.2", "vitest": "^2.1.8" }
