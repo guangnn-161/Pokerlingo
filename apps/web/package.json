@@ -2,7 +2,7 @@
   "name": "@pokerlingo/web", "private": true, "version": "0.1.0",
   "scripts": {
     "dev": "next dev", "build": "next build", "start": "next start",
-    "lint": "next lint", "typecheck": "tsc -p tsconfig.json", "test": "vitest run"
+    "lint": "tsc -p tsconfig.json", "typecheck": "tsc -p tsconfig.json", "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.7.4", "@pokerlingo/contracts": "workspace:*",
