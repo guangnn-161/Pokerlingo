@@ -8,15 +8,21 @@ import { db } from "@pokerlingo/db";
 import { profiles } from "@pokerlingo/db/schema";
 
 const providers: Provider[] = [];
-if (process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET) {
-  providers.push(GitHub({ clientId: process.env.AUTH_GITHUB_ID, clientSecret: process.env.AUTH_GITHUB_SECRET }));
+const githubId = process.env.AUTH_GITHUB_ID?.trim();
+const githubSecret = process.env.AUTH_GITHUB_SECRET?.trim();
+const googleId = process.env.AUTH_GOOGLE_ID?.trim();
+const googleSecret = process.env.AUTH_GOOGLE_SECRET?.trim();
+
+if (githubId && githubSecret) {
+  providers.push(GitHub({ clientId: githubId, clientSecret: githubSecret }));
 }
-if (process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET) {
-  providers.push(Google({ clientId: process.env.AUTH_GOOGLE_ID, clientSecret: process.env.AUTH_GOOGLE_SECRET }));
+if (googleId && googleSecret) {
+  providers.push(Google({ clientId: googleId, clientSecret: googleSecret }));
 }
 if (process.env.AUTH_RESEND_KEY && process.env.EMAIL_FROM) {
   providers.push(Resend({ apiKey: process.env.AUTH_RESEND_KEY, from: process.env.EMAIL_FROM }));
 }
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: DrizzleAdapter(db), providers, trustHost: true,
   session: { strategy: "database", maxAge: 60 * 60 * 24 * 30, updateAge: 60 * 60 * 24 },
