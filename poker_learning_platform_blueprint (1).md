@@ -11,7 +11,7 @@ Tài liệu này vừa là product blueprint vừa là hợp đồng làm việc
 | A — Platform | Đã có monorepo pnpm, Next.js/Vercel, Neon PostgreSQL, Drizzle, GitHub OAuth, profile API, health check và rate limit | Production đang chạy. Preview dùng biến `DATABASE_URL_PREVIEW`; migration vẫn chỉ do A chạy. |
 | B — Math | Đã có package `@pokerlingo/math` v1 và `POST /api/math/calculate` | Có Hold'em evaluator/equity heads-up, range/blocker, poker EV/rake, Blackjack infinite-deck EV, casino payout/roulette/sportsbook và fixed-seed risk simulation; chưa có multiway equity, solver hay finite-shoe Blackjack. |
 | C — Learning | Đã có contract Zod + fixture API **demo** | Có scenario/attempt/dashboard mock; chưa có persistence, admin publish, XP ledger, daily scheduler hoặc scoring thật. |
-| D — Product/social | Đã có vertical slice `/demo` tiếng Việt | Happy path demo: bàn poker 6-max → chọn action → xem EV loss → xem XP/quest/leaderboard/friends mock. Chưa có design system, social mutation hoặc privacy enforcement. |
+| D — Product/social | Đã có bài học `/demo` tiếng Việt theo vertical slice | Happy path demo: đọc bối cảnh/bàn 6-max → quiz vị trí → pot odds → chọn action → xem EV/range giải thích → ôn nhanh → XP/quest/leaderboard mock. Chưa có persistence, design system dùng chung, social mutation hoặc privacy enforcement. |
 
 **Quy tắc đọc tài liệu:** không coi mock data, score hay leaderboard demo là dữ liệu sản phẩm. Khi thay demo bằng production code, giữ DTO tại `@pokerlingo/contracts/demo` hoặc thực hiện thay đổi có version/changelog.
 
