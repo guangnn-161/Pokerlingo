@@ -2,6 +2,19 @@
 
 > Phiên bản 2 — mở rộng từ NLHE trainer thành nền tảng học **decision-making under uncertainty** cho poker và blackjack. Tài liệu này lấy *The Theory of Poker* của David Sklansky làm trục tư duy; cuốn sách bàn về các ý tưởng áp dụng cho nhiều biến thể, gồm draw, stud, hold'em, lowball và razz, chứ không chỉ NLHE. [Thông tin xuất bản/tóm tắt phạm vi](https://books.google.com/books/about/The_Theory_of_Poker.html?id=7HJtinI6u6sC)
 
+## 0. Trạng thái triển khai hiện tại — cập nhật 24/09/2026
+
+Tài liệu này vừa là product blueprint vừa là hợp đồng làm việc. Các đoạn bên dưới mô tả **mục tiêu**; bảng này mới là trạng thái code đã có trong repository tại commit `2ba317c`.
+
+| Khu vực | Trạng thái thực tế | Ghi chú bàn giao |
+|---|---|---|
+| A — Platform | Đã có monorepo pnpm, Next.js/Vercel, Neon PostgreSQL, Drizzle, GitHub OAuth, profile API, health check và rate limit | Production đang chạy. Preview dùng biến `DATABASE_URL_PREVIEW`; migration vẫn chỉ do A chạy. |
+| B — Math | Đã có package `@pokerlingo/math` **demo** và test đơn vị cơ bản | Có pot odds/call EV, edge roulette, overround và gợi ý Blackjack đơn giản; chưa có evaluator, range parser hay solver. |
+| C — Learning | Đã có contract Zod + fixture API **demo** | Có scenario/attempt/dashboard mock; chưa có persistence, admin publish, XP ledger, daily scheduler hoặc scoring thật. |
+| D — Product/social | Đã có vertical slice `/demo` tiếng Việt | Happy path demo: chọn action → xem EV loss → xem XP/quest/leaderboard/friends mock. Chưa có design system, social mutation hoặc privacy enforcement. |
+
+**Quy tắc đọc tài liệu:** không coi mock data, score hay leaderboard demo là dữ liệu sản phẩm. Khi thay demo bằng production code, giữ DTO tại `@pokerlingo/contracts/demo` hoặc thực hiện thay đổi có version/changelog.
+
 ## 1. Mục tiêu sản phẩm
 
 Xây dựng một web app giúp người học **ra quyết định có lý do định lượng**, thay vì học thuộc chart hay chơi theo cảm giác. Sản phẩm có hai nhánh game khác bản chất:
@@ -110,7 +123,7 @@ flowchart TD
 |---|---|---|
 | Frontend | Next.js + TypeScript + Tailwind | UI nhanh, SSR, typed codebase |
 | Backend | Next.js route handlers hoặc NestJS/FastAPI | API, auth, practice workflow |
-| Database | PostgreSQL + Prisma/Drizzle | người dùng, hand, kết quả luyện |
+| Database | PostgreSQL + Drizzle | người dùng, hand, kết quả luyện |
 | Cache / queue | Redis (khi cần) | cache equity, job nặng |
 | Poker math | TypeScript module hoặc Python microservice | evaluator, equity Monte Carlo, EV |
 | Deploy | Vercel + managed PostgreSQL / Docker | MVP dễ triển khai |
@@ -472,7 +485,9 @@ Không dùng score thay cho feedback. Lưu thêm `mistake_tag` như `pot_odds`, 
 
 Không dùng win-rate poker tiền thật làm metric trung tâm: nó bị nhiễu bởi variance và không cần thiết cho mục tiêu học.
 
-## 18. Cấu trúc code đề xuất
+## 18. Cấu trúc code mục tiêu sau demo
+
+Repository hiện có `apps/web`, `packages/contracts`, `packages/db` và `packages/math`. Các package bên dưới là cấu trúc mục tiêu để B/C/D mở rộng dần; chưa được hiểu là đã tồn tại hoặc đã deploy. Khi tạo mới, giữ engine thuần TypeScript, không phụ thuộc React/DB.
 
 ```text
 apps/web/                 # Next.js pages và components
@@ -544,26 +559,15 @@ Vercel host **web Next.js, API route handlers, authentication và thao tác data
 ```text
 .
 ├─ apps/
-│  └─ web/                         # Next.js app — Vercel Root Directory
+│  └─ web/                         # Next.js app; build từ repository root
 │     ├─ app/
 │     ├─ app/api/
 │     ├─ lib/
 │     └─ package.json
 ├─ packages/
-│  ├─ game-core/
-│  ├─ poker-core/
-│  ├─ blackjack-core/
-│  ├─ scenario-schema/
-│  └─ ui/
-├─ workers/
-│  └─ compute/                     # Docker/FastAPI or Node worker; không deploy Vercel
-├─ prisma/
-│  ├─ schema.prisma
-│  └─ migrations/
-├─ scripts/
-│  ├─ verify-env.mjs
-│  ├─ health-check.mjs
-│  └─ seed-scenarios.mjs
+│  ├─ contracts/                    # Zod DTO: auth, game, learning, social, demo
+│  ├─ db/                           # Drizzle schema + migrations
+│  └─ math/                         # B: pure demo math package + unit tests
 ├─ .github/workflows/ci.yml
 ├─ package.json
 ├─ pnpm-workspace.yaml
@@ -579,36 +583,34 @@ Thiết lập Vercel Project:
 |---|---|
 | Git repository | repo GitHub của dự án |
 | Framework preset | Next.js |
-| Root Directory | `apps/web` |
-| Install command | `pnpm install --frozen-lockfile` |
-| Build command | `pnpm --filter web build` |
+| Root Directory | repository root (để pnpm workspace resolve packages) |
+| Install command | `pnpm install --no-frozen-lockfile` |
+| Build command | `pnpm --filter @pokerlingo/web build` |
 | Production branch | `main` |
 | Node version | pin bằng `.nvmrc` hoặc `engines.node` |
 
-Vercel tự tạo Preview Deployment cho branch/PR và Production Deployment khi merge vào production branch. [Git deployments](https://vercel.com/docs/git) [Preview environments](https://vercel.com/docs/deployments/environments)
+Vercel tự tạo Preview Deployment cho branch/PR và Production Deployment khi merge vào production branch. `apps/web/vercel.json` là source of truth cho install/build commands hiện tại. [Git deployments](https://vercel.com/docs/git) [Preview environments](https://vercel.com/docs/deployments/environments)
 
-### 22.3. Package scripts bắt buộc
+### 22.3. Package scripts hiện tại và mục tiêu
 
 ```json
 {
   "scripts": {
-    "dev": "pnpm --filter web dev",
-    "lint": "eslint . --max-warnings=0",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:integration": "playwright test",
-    "build": "pnpm --filter web build",
-    "db:generate": "prisma generate",
-    "db:migrate:deploy": "prisma migrate deploy",
-    "db:seed": "tsx scripts/seed-scenarios.mts",
-    "verify:env": "node scripts/verify-env.mjs"
+    "dev": "pnpm --filter @pokerlingo/web dev",
+    "lint": "pnpm --filter @pokerlingo/web lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "build": "pnpm --filter @pokerlingo/web build",
+    "db:generate": "pnpm --filter @pokerlingo/db generate",
+    "db:migrate": "pnpm --filter @pokerlingo/db migrate",
+    "db:seed": "pnpm --filter @pokerlingo/db seed"
   },
-  "packageManager": "pnpm@10.0.0",
-  "engines": { "node": ">=22 <23" }
+  "packageManager": "pnpm@9.15.4",
+  "engines": { "node": ">=20.11.0" }
 }
 ```
 
-Khóa package manager và Node version để local, CI và Vercel dùng cùng dependency graph. Chỉ commit `pnpm-lock.yaml`; không commit `.env*` thật, `.vercel/` hay output build.
+Các lệnh trên là trạng thái hiện tại. Mục tiêu sau khi có lockfile ổn định là chuyển install CI/Vercel sang `--frozen-lockfile`; không commit `.env*` thật, `.vercel/` hay output build.
 
 ### 22.4. Biến môi trường
 
@@ -620,17 +622,19 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 # required server-only
 DATABASE_URL=
-DIRECT_URL=
 AUTH_SECRET=
 AUTH_URL=http://localhost:3000
-REDIS_URL=
-QUEUE_TOKEN=
+AUTH_GITHUB_ID=
+AUTH_GITHUB_SECRET=
 
-# optional compute worker
-COMPUTE_WORKER_URL=
-COMPUTE_WORKER_TOKEN=
+# Preview only: Neon branch, never production credentials
+DATABASE_URL_PREVIEW=
 
-# operations
+# rate limit hiện tại
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+
+# roadmap operations (chưa cấu hình)
 CRON_SECRET=
 SENTRY_DSN=
 ```
@@ -641,26 +645,17 @@ Tạo ba bộ giá trị tách biệt trong Vercel: **Development**, **Preview**
 
 ```json
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm --filter web build",
-  "crons": [
-    { "path": "/api/cron/reconcile-jobs", "schedule": "0 * * * *" }
-  ],
-  "functions": {
-    "apps/web/app/api/ev/calculate/route.ts": {
-      "maxDuration": 30
-    }
-  }
+  "installCommand": "pnpm install --no-frozen-lockfile",
+  "buildCommand": "pnpm --filter @pokerlingo/web build"
 }
 ```
 
-Cron chỉ dùng để reconcile/retry job nhẹ; endpoint phải kiểm tra `CRON_SECRET` trước khi làm việc. Vercel Cron gọi function theo lịch qua cấu hình project. [Vercel Cron Jobs](https://vercel.com/docs/cron-jobs)
+Đây là cấu hình đang chạy. Chỉ thêm `crons` khi đã có route cron thật; endpoint phải kiểm tra `CRON_SECRET` trước khi làm việc. Vercel Cron gọi function theo lịch qua cấu hình project. [Vercel Cron Jobs](https://vercel.com/docs/cron-jobs)
 
 Không đặt migration, seed lớn, worker hay solver trong `buildCommand`. Một build có thể chạy cho mỗi preview và có thể bị retry; chạy side effect ở đây gây migration lặp hoặc thay dữ liệu production.
 
-### 22.6. CI bắt buộc trên GitHub Actions
+### 22.6. CI hiện tại và hardening tiếp theo
 
 `.github/workflows/ci.yml`:
 
@@ -672,35 +667,33 @@ on:
     branches: [main]
 
 jobs:
-  quality:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with: { version: 10 }
+        with: { version: 9.15.4 }
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm verify:env
-        env:
-          DATABASE_URL: postgresql://placeholder
-          AUTH_SECRET: ci-placeholder
+      - run: pnpm install --no-frozen-lockfile
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/pokerlingo
 ```
 
-Branch protection cho `main`: require CI xanh, require review và cấm push trực tiếp. Vercel Git integration chỉ deployment sau khi build thành công; GitHub Actions là lớp chặn sớm cho lint/test/typecheck.
+CI hiện kiểm tra lint, typecheck, test và production build. **Chưa xác nhận branch protection**; trước khi có nhiều người cùng code, A cần bật require CI xanh + review và ngừng push trực tiếp vào `main`. Vercel Git integration là lớp deploy, GitHub Actions là lớp chặn sớm.
 
 ### 22.7. Database migration không downtime
 
 Quy tắc deploy theo thứ tự:
 
 1. Viết migration **additive**: thêm table/column nullable/index mới, không xóa/rename ngay.
-2. Merge `main`; chạy `pnpm db:migrate:deploy` **một lần** từ protected CI/CD job có production `DATABASE_URL`.
+2. Merge `main`; hiện chạy `pnpm db:migrate` **một lần** từ môi trường kiểm soát có production `DATABASE_URL`. Khi CI/CD được harden, A có thể thêm script `db:migrate:deploy` riêng thay vì chạy migration trong Vercel Build Step.
 3. Deploy application có thể đọc/ghi cả schema cũ và mới.
 4. Backfill bằng worker idempotent nếu cần.
 5. Chỉ ở release sau mới remove schema cũ.
@@ -721,23 +714,24 @@ Mỗi job có `id`, `type`, `payload_version`, `idempotency_key`, `status`, `att
 
 ### 22.9. Health, observability và rollback
 
-- `GET /api/health`: kiểm tra version app, DB reachability và queue reachability; không lộ secret.
+- `GET /api/health` hiện kiểm tra version app và DB reachability; khi có queue mới bổ sung queue reachability. Không lộ secret.
 - Structured logs: `request_id`, `user_id` đã hash (nếu cần), `scenario_id`, `engine_version`, `duration_ms`, `error_code`.
-- Error tracking: Sentry hoặc provider tương đương cho browser, route handler và worker.
+- Error tracking: Sentry hoặc provider tương đương cho browser, route handler và worker. **Chưa kết nối ở bản hiện tại.**
 - Monitor: function error rate, p95 latency, DB connection failures, queue depth, failed-job rate, EV calculation timeout.
 - Rollback app: chọn deployment Vercel trước đó và promote lại; database migration additive giúp code cũ vẫn chạy.
 - Rollback data: scenario/strategy/reference luôn versioned, publish bằng trạng thái `draft → reviewed → published`, không overwrite dữ liệu đã dùng để chấm attempt.
 
 ### 22.10. Checklist đưa lên production lần đầu
 
-- [ ] GitHub repo có `main` protected và CI passing.
-- [ ] Vercel Project đã kết nối repo, root directory là `apps/web`.
-- [ ] Development/Preview/Production có secrets riêng.
-- [ ] Production database đã bật backup và pooling.
-- [ ] Migration production đã chạy một lần và có backup/rollback plan.
-- [ ] `/api/health` trả 200 trên Preview và Production.
-- [ ] Auth callback URL, custom domain và `NEXT_PUBLIC_APP_URL` đúng production domain.
-- [ ] Rate limit cho login, EV calculate, admin import và API public.
+- [ ] GitHub repo có `main` protected và CI passing. (CI có; branch protection chưa xác minh.)
+- [x] Vercel Project đã kết nối repo và build từ repository root bằng pnpm workspace.
+- [x] Production và Preview có connection database tách qua `DATABASE_URL` / `DATABASE_URL_PREVIEW`.
+- [x] Migration foundation đã chạy trên Production; migration domain mới vẫn phải additive và do A chạy.
+- [x] `/api/health` trả 200 trên Production.
+- [ ] Xác nhận backup, pooling và retention của Production Neon trước khi có dữ liệu người dùng thật.
+- [x] GitHub OAuth callback và rate limit cho login/profile đã được cấu hình.
+- [ ] Xác minh Preview URL từ một PR thật.
+- [ ] Rate limit cho EV calculate, admin import và API public khi các route thật được thêm.
 - [ ] Cron endpoint kiểm tra secret; worker token không lộ sang client.
 - [ ] Tắt source-map/public log chứa sensitive payload nếu không cần.
 - [ ] Có alert cho error spike, DB failure và queue backlog.
@@ -762,7 +756,7 @@ Hệ thống cần có tài khoản từ đầu, vì XP, streak, daily puzzle, b
 
 | Khả năng | Thiết kế đề xuất |
 |---|---|
-| Đăng nhập | OAuth Google/GitHub + email magic link; không cần password ở MVP |
+| Đăng nhập | **Hiện tại:** GitHub OAuth. Google OAuth và email magic link là mở rộng tùy chọn, chưa cấu hình. |
 | Session | HTTP-only secure cookie; session server-side hoặc JWT ngắn hạn có rotation |
 | Profile | handle duy nhất, display name, avatar, timezone, level và privacy setting |
 | Account safety | email verification, rate limit login, revoke session, audit log |
@@ -930,7 +924,7 @@ Không chia theo từng trang web, vì như vậy cả 4 người sẽ cùng s�
 
 Mọi người có thể đề xuất thay đổi ở phần khác qua issue/PR, nhưng owner phải approve. Một file migration chỉ có A tạo; một public contract chỉ thay đổi qua PR có A + owner liên quan review.
 
-### 25.2. Package contract chung — làm trong 2 ngày đầu
+### 25.2. Package contract chung — trạng thái v0.1
 
 Trước khi chia code, cả team cùng tạo và freeze v0.1:
 
@@ -941,15 +935,20 @@ packages/contracts/
   learning.ts      # Scenario, Attempt, DailyPuzzle, Quest, XPEvent, MasteryScore
   social.ts        # FriendRequest, Friendship, LeaderboardEntry
   api.ts           # Zod request/response DTOs + error shape
-packages/ui/
-  tokens.ts        # colors, spacing, typography; không chứa domain logic
+  demo.ts          # DTO fixture: scenario, attempt result, dashboard
+packages/math/
+  src/index.ts     # B: pure demo calculations
+apps/web/app/api/demo/
+  scenario/        # C: fixture scenario
+  attempt/         # C: fixture scoring
+  dashboard/       # C/D: fixture progression + social
 ~~~
 
 Quy ước bắt buộc:
 
 - TypeScript strict; Zod là nguồn schema cho request/response.
 - API trả lỗi thống nhất: code, message, requestId, details an toàn.
-- Tất cả money/chip unit dùng integer hoặc decimal string, không float.
+- Bản production dùng integer hoặc decimal string cho money/chip; số float hiện diện trong **fixture demo** chỉ để minh họa EV và phải được thay trước khi persistence.
 - Server tự tính score, XP, EV loss, ranking và quest progress.
 - Thay đổi breaking contract phải tăng version, update mock và có migration plan.
 
@@ -960,19 +959,21 @@ Quy ước bắt buộc:
 | Hạng mục | Deliverable |
 |---|---|
 | Monorepo | pnpm workspace, lint, typecheck, test, shared contracts |
-| Identity | OAuth/magic link, session, current-user middleware, role user/admin |
-| Data | PostgreSQL + Prisma/Drizzle, migration workflow, seed dev |
-| Security | rate limit, CSRF/cookie, validation middleware, audit log |
+| Identity | GitHub OAuth, session database và current-user middleware; Google/magic link để sau |
+| Data | PostgreSQL + Drizzle, migration workflow, seed dev |
+| Security | rate limit cho login/profile và validation; audit log/CSRF hardening để sau |
 | Deploy | GitHub Actions, Vercel Preview/Production, env validation, health endpoint |
-| Observability | requestId, error reporting, structured logging |
+| Observability | health endpoint hiện có; requestId, Sentry và structured logging để sau |
 
 **API nền tảng bàn giao:** GET /api/me, GET /api/health, profile read/update, auth callback/logout. A tạo các bảng users, profiles, sessions, audit_logs và migration scaffold cho các domain khác; C/D gửi schema proposal thay vì tự tạo migration.
 
-**Definition of done:** clone repo → pnpm install → pnpm dev chạy; login được; Preview Vercel tạo từ PR; CI lint/typecheck/test/build xanh; local và preview dùng DB tách biệt.
+**Definition of done của A hiện tại:** clone repo → `pnpm install` → `pnpm dev` chạy; GitHub login được khi OAuth secrets/callback đúng; CI lint/typecheck/test/build xanh; Production và Preview dùng DB tách qua `DATABASE_URL` / `DATABASE_URL_PREVIEW`. Preview từ PR và branch protection cần được kiểm tra lại khi team bắt đầu dùng PR thật.
 
 ### 25.4. Người B — Game Mathematics và Calculator API
 
 **Mục tiêu:** poker, blackjack và casino math là pure, testable packages; web không chứa công thức.
+
+**Trạng thái demo đã bàn giao:** `packages/math` có `requiredEquity`, `callEvBb`, `rouletteHouseEdge`, `sportsbookOverround` và `blackjackBasicStrategy`, kèm test `packages/math/src/index.test.ts`. `ENGINE_VERSION` được trả ra từ API scenario. Đây là nền pure/testable để B thay thế từng hàm, không phải engine poker hoàn chỉnh.
 
 | Hạng mục | Deliverable |
 |---|---|
@@ -982,13 +983,15 @@ Quy ước bắt buộc:
 | API | validate input → calculate → trả assumptions, method, engineVersion |
 | Quality | golden test vectors, fixed-seed simulation, benchmarks |
 
-**Phạm vi MVP B:** NLHE heads-up static EV, one Blackjack ruleset và roulette/overround/poker-rake calculator. B chỉ xuất DTO từ contracts; route handlers do A scaffold hoặc B thêm trong phạm vi app/api/math nhưng không sửa auth layer.
+**Việc tiếp theo của B:** thêm card/range parser, reject duplicate card, ruleset version và test vector; sau đó tạo `/api/math/*` thật. Không thay đổi DTO demo đang được C/D tiêu thụ nếu chưa có changelog/migration path.
 
 **Definition of done:** mỗi engine chạy bằng unit test không cần DB/UI; endpoint trả cùng kết quả với test vector; request invalid/card duplicate bị reject; result luôn kèm ruleset/assumptions.
 
 ### 25.5. Người C — Learning System, Content và Gamification
 
 **Mục tiêu:** biến engine thành lộ trình học, scenario và progression có thể quản trị.
+
+**Trạng thái demo đã bàn giao:** `@pokerlingo/contracts/demo` mô tả Scenario, AttemptResult và Dashboard; `/api/demo/scenario`, `/api/demo/attempt`, `/api/demo/dashboard` trả fixture không cần database. Attempt hiện chỉ chấm `fold/call/raise` của một spot AQs và tuyệt đối không ghi XP/attempt vào DB.
 
 | Hạng mục | Deliverable |
 |---|---|
@@ -999,13 +1002,15 @@ Quy ước bắt buộc:
 | Quests/XP | template rules, idempotent XP events, level thresholds, mastery update |
 | Casino Math lessons | lesson, quiz, calculator explanation và safety disclaimer |
 
-**Dependency:** C dùng Math API/interface B bằng mock đã freeze. C gửi A schema proposal cho scenarios, attempts, daily_puzzles, quests, xp_ledger, mastery và migration requirement. C không sửa UI component chung ngoài content/admin-specific components.
+**Việc tiếp theo của C:** chuyển fixture thành repository/service có schema proposal gửi A; implement draft → reviewed → published, first attempt, idempotency key và XP ledger transactionally. C không được coi dashboard mock là leaderboard thật.
 
 **Definition of done:** admin publish một scenario; user làm attempt và nhận explanation + EV loss; daily puzzle không lộ solution trước submit; XP ledger idempotent; daily/weekly quest chạy được với test theo period.
 
 ### 25.6. Người D — Product UI, Social và Dashboard
 
 **Mục tiêu:** biến các API thành trải nghiệm mượt, mobile-friendly và có privacy.
+
+**Trạng thái demo đã bàn giao:** `/demo` là client page tiếng Việt gọi đúng ba API fixture, cho phép chọn action và hiển thị result, XP/quest, leaderboard/friends. Home có link vào demo. UI cố ý dùng inline styles để D thay bằng design system; các nút demo không tạo friend request hay dữ liệu người dùng.
 
 | Hạng mục | Deliverable |
 |---|---|
@@ -1016,11 +1021,13 @@ Quy ước bắt buộc:
 | Leaderboard | daily/weekly/friends boards, season selector, privacy labels |
 | Accessibility | keyboard action controls, color-independent feedback, responsive layout |
 
-**Cách làm song song:** D xây screen bằng MSW/mock data đúng contracts trước. Khi A/C/B có endpoint thật, thay adapter mock bằng API client; không thay DTO tùy ý trong component.
+**Việc tiếp theo của D:** tách component/design token, thêm responsive layout và loading/error/empty state, sau đó thay mock API bằng client thật. Friend request, block/report và privacy labels chỉ bật khi C/A có mutation server-side tương ứng.
 
 **Definition of done:** toàn bộ happy path demo được với mock; component test cho action/empty/error states; integration smoke test cho login → drill → result → quest → leaderboard/friend request; không expose private profile data.
 
 ### 25.7. Kế hoạch 4 tuần và điểm ghép code
+
+Kế hoạch dưới đây là **roadmap sau demo**, không phải bảng trạng thái hoàn thành. Mốc đã đạt là “vertical slice demo không persistence”; chưa đạt vertical slice production vì chưa có user-scoped attempt → scoring thật → XP/quest/database.
 
 | Tuần | A — Platform | B — Math | C — Learning | D — UI/social | Mốc ghép |
 |---|---|---|---|---|---|
@@ -1070,3 +1077,4 @@ Mỗi PR/nhóm code gửi cho nhau phải kèm:
 ~~~
 
 Đây là cách để một người có thể nhận phần việc dang dở của người khác mà không cần đọc lại toàn bộ codebase. Mọi handoff cũng phải có owner tiếp theo và issue link.
+
