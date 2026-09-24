@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
-export const metadata: Metadata = { title: "Pokerlingo", description: "Learn poker, blackjack and probability with explainable EV." };
+
+export const metadata: Metadata = {
+  title: "Pokerlingo",
+  description: "Học poker, blackjack và xác suất qua các bài giải thích EV rõ ràng."
+};
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body>{children}</body></html>;
+  return <html lang="vi"><body>{children}</body></html>;
 }
