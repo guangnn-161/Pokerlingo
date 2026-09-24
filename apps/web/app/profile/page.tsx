@@ -7,9 +7,9 @@ export default async function ProfilePage() {
   if (!user) redirect("/login");
 
   return <main style={{ maxWidth: 640, margin: "4rem auto", fontFamily: "system-ui", padding: "0 1rem", color: "#171717" }}>
-    <p style={{ color: "#a16207", fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase" }}>Account</p>
-    <h1>Your learner profile</h1>
-    <p>Set the name and privacy level used by future leaderboards, friends and progress features.</p>
+    <p style={{ color: "#a16207", fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase" }}>Tài khoản</p>
+    <h1>Hồ sơ người học</h1>
+    <p>Đặt tên hiển thị và mức riêng tư dùng cho bảng xếp hạng, bạn bè và các tính năng theo dõi tiến độ sau này.</p>
     <ProfileForm
       initialDisplayName={user.profile?.displayName ?? user.name ?? ""}
       initialHandle={user.profile?.handle ?? ""}
