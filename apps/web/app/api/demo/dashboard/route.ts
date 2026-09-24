@@ -7,8 +7,8 @@ export async function GET() {
       level: 2,
       mastery: 68,
       quests: [
-        { id: "pot-odds", title: "Làm 3 spot pot odds", progress: 2, target: 3 },
-        { id: "daily", title: "Hoàn thành câu đố hôm nay", progress: 0, target: 1 }
+        { id: "pot-odds", title: "Complete 3 pot-odds spots", progress: 2, target: 3 },
+        { id: "daily", title: "Finish today's quiz", progress: 0, target: 1 }
       ],
       leaderboard: [
         { rank: 1, handle: "river_reader", score: 97 },
@@ -16,8 +16,8 @@ export async function GET() {
         { rank: 3, handle: "demo_learner", score: 86 }
       ],
       friends: [
-        { handle: "chip_math", status: "Đã là bạn" },
-        { handle: "equity_lab", status: "Đang chờ phản hồi" }
+        { handle: "chip_math", status: "Friend" },
+        { handle: "equity_lab", status: "Request pending" }
       ]
     },
     requestId: crypto.randomUUID()

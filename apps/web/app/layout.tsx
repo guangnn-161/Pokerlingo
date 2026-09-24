@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Pokerlingo",
-  description: "Học poker, blackjack và xác suất qua các bài giải thích EV rõ ràng."
+  description: "Learn poker, blackjack and probability through clear EV explanations and interactive drills."
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

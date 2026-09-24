@@ -3,15 +3,15 @@ import { demoAttemptRequestSchema } from "@pokerlingo/contracts/demo";
 
 const values = { fold: 0, call: -0.15, raise: 0.12 } as const;
 const explanations = {
-  fold: "Fold không mất thêm chip nhưng bỏ lỡ một spot 4-bet có EV dương theo range giả định.",
-  call: "Call để chơi postflop có EV thấp hơn do bất lợi vị trí/range trong giả định demo.",
-  raise: "4-bet là lựa chọn tham chiếu trong demo vì blocker A và equity của AQs trước range BB."
+  fold: "Folding avoids investing another 7.5bb, but gives up a positive-EV 4-bet opportunity in this fixed range model.",
+  call: "Calling takes a lower-EV postflop route against BB's stronger range under this drill's assumptions.",
+  raise: "4-betting is the reference action because AQs has useful ace blockers and retains equity when BB continues."
 } as const;
 
 export async function POST(request: Request) {
   const parsed = demoAttemptRequestSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success || parsed.data.scenarioId !== "demo-btn-aqs-vs-3bet") {
-    return NextResponse.json({ code: "INVALID_REQUEST", message: "Dữ liệu attempt demo không hợp lệ.", requestId: crypto.randomUUID() }, { status: 400 });
+    return NextResponse.json({ code: "INVALID_REQUEST", message: "The drill attempt is invalid.", requestId: crypto.randomUUID() }, { status: 400 });
   }
   const selectedEvBb = values[parsed.data.action];
   const evLossBb = Math.max(0, values.raise - selectedEvBb);
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
       evLossBb,
       score: Math.max(0, Math.round(100 - evLossBb * 100)),
       explanation: explanations[parsed.data.action],
-      assumptions: ["Kết quả là fixture demo, chưa được lưu vào database.", "Bản production sẽ gọi engine B và scoring service C."],
+      assumptions: ["This result is a demo fixture and is not stored in the database.", "Production will use B's range/equity engine and C's scoring service."],
       demo: true
     },
     requestId: crypto.randomUUID()

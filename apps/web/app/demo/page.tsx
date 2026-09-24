@@ -1,8 +1,8 @@
 import DemoClient from "./demo-client";
 
 export const metadata = {
-  title: "Demo học tập | Pokerlingo",
-  description: "Bài học poker tương tác: đọc bàn, pot odds, range và quyết định preflop."
+  title: "Preflop Trainer | Pokerlingo",
+  description: "An interactive poker drill for table reading, pot odds, ranges and preflop decisions."
 };
 
 export default function DemoPage() {

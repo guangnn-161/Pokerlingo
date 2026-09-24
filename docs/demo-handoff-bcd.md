@@ -3,7 +3,7 @@
 ## What changed
 - **B — Math:** `packages/math` là package thuần v1 với parser/evaluator/equity NLHE heads-up, range/blocker, poker EV/rake, Blackjack infinite-deck EV, casino payout/roulette/sportsbook math và fixed-seed risk simulation. API calculator: `POST /api/math/calculate`.
 - **C — Learning:** API fixture cho scenario, attempt scoring và dashboard không cần database.
-- **D — Product UI:** `/demo` là bài học poker tiếng Việt theo nhịp: bối cảnh → bàn 6-max → kiểm tra vị trí → pot odds → chọn action → giải thích/range → ôn lại. Có stack, pot, hole cards Hero, bài úp đối thủ, XP/quest/leaderboard fixture.
+- **D — Product UI:** `/demo` is an English, drill-first preflop trainer: hand/table → decision → immediate feedback → replay → range/pot-odds study → knowledge check. It includes a six-max table, Hero cards, villain card backs, a training path and fixture XP/quest/leaderboard.
 
 ## Contract
 - DTO demo nằm ở `@pokerlingo/contracts/demo`.
@@ -23,5 +23,5 @@ pnpm dev
 ## Known limits
 - Không lưu attempt/XP/friendship vào Postgres.
 - Poker hiện chỉ hỗ trợ Hold'em heads-up; không có multiway equity, solver, finite-shoe Blackjack hoặc resplit Blackjack.
-- Scenario/attempt/dashboard vẫn là fixture demo và chưa được persistence vào database; câu hỏi kiểm tra chỉ lưu trong state trình duyệt.
-- Bài tiếp theo, multi-street board, range editor và lịch ôn chỉ là định hướng UI; chưa có route/engine/persistence tương ứng.
+- Scenario/attempt/dashboard are still fixtures with no database persistence; quick-check answers, correct streak and replay state live only in the browser.
+- Additional drills, multi-street boards, a range editor, timed mode and spaced-review scheduling are product directions only; there is no scenario engine or persistence for them yet.
