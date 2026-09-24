@@ -4,12 +4,12 @@
 
 ## 0. Trạng thái triển khai hiện tại — cập nhật 24/09/2026
 
-Tài liệu này vừa là product blueprint vừa là hợp đồng làm việc. Các đoạn bên dưới mô tả **mục tiêu**; bảng này mới là trạng thái code đã có trong repository tại commit `2ba317c`.
+Tài liệu này vừa là product blueprint vừa là hợp đồng làm việc. Các đoạn bên dưới mô tả **mục tiêu**; bảng này phản ánh baseline ở commit `2ba317c` cộng với phần B Math v1 được bàn giao trong branch hiện tại.
 
 | Khu vực | Trạng thái thực tế | Ghi chú bàn giao |
 |---|---|---|
 | A — Platform | Đã có monorepo pnpm, Next.js/Vercel, Neon PostgreSQL, Drizzle, GitHub OAuth, profile API, health check và rate limit | Production đang chạy. Preview dùng biến `DATABASE_URL_PREVIEW`; migration vẫn chỉ do A chạy. |
-| B — Math | Đã có package `@pokerlingo/math` **demo** và test đơn vị cơ bản | Có pot odds/call EV, edge roulette, overround và gợi ý Blackjack đơn giản; chưa có evaluator, range parser hay solver. |
+| B — Math | Đã có package `@pokerlingo/math` v1 và `POST /api/math/calculate` | Có Hold'em evaluator/equity heads-up, range/blocker, poker EV/rake, Blackjack infinite-deck EV, casino payout/roulette/sportsbook và fixed-seed risk simulation; chưa có multiway equity, solver hay finite-shoe Blackjack. |
 | C — Learning | Đã có contract Zod + fixture API **demo** | Có scenario/attempt/dashboard mock; chưa có persistence, admin publish, XP ledger, daily scheduler hoặc scoring thật. |
 | D — Product/social | Đã có vertical slice `/demo` tiếng Việt | Happy path demo: chọn action → xem EV loss → xem XP/quest/leaderboard/friends mock. Chưa có design system, social mutation hoặc privacy enforcement. |
 
@@ -973,7 +973,7 @@ Quy ước bắt buộc:
 
 **Mục tiêu:** poker, blackjack và casino math là pure, testable packages; web không chứa công thức.
 
-**Trạng thái demo đã bàn giao:** `packages/math` có `requiredEquity`, `callEvBb`, `rouletteHouseEdge`, `sportsbookOverround` và `blackjackBasicStrategy`, kèm test `packages/math/src/index.test.ts`. `ENGINE_VERSION` được trả ra từ API scenario. Đây là nền pure/testable để B thay thế từng hàm, không phải engine poker hoàn chỉnh.
+**Trạng thái hiện tại:** `packages/math` giữ nguyên các hàm demo cho C/D và có engine v1 cho parser/evaluator/equity Hold'em heads-up, range/blocker, poker EV/rake, Blackjack infinite-deck EV, payout-table/roulette/sportsbook math và seeded risk simulation. `POST /api/math/calculate` validate request và trả assumptions, method, ruleset, warnings cùng engine version. Golden vectors ở `packages/math/src/test-vectors/v1.json`; chi tiết/giới hạn ở `docs/math-engine.md`.
 
 | Hạng mục | Deliverable |
 |---|---|
@@ -983,7 +983,7 @@ Quy ước bắt buộc:
 | API | validate input → calculate → trả assumptions, method, engineVersion |
 | Quality | golden test vectors, fixed-seed simulation, benchmarks |
 
-**Việc tiếp theo của B:** thêm card/range parser, reject duplicate card, ruleset version và test vector; sau đó tạo `/api/math/*` thật. Không thay đổi DTO demo đang được C/D tiêu thụ nếu chưa có changelog/migration path.
+**Việc tiếp theo của B:** finite-shoe Blackjack, resplit rules, multiway equity, performance benchmark/cache và solver integration. Không thay đổi DTO demo đang được C/D tiêu thụ nếu chưa có changelog/migration path.
 
 **Definition of done:** mỗi engine chạy bằng unit test không cần DB/UI; endpoint trả cùng kết quả với test vector; request invalid/card duplicate bị reject; result luôn kèm ruleset/assumptions.
 
@@ -1077,4 +1077,3 @@ Mỗi PR/nhóm code gửi cho nhau phải kèm:
 ~~~
 
 Đây là cách để một người có thể nhận phần việc dang dở của người khác mà không cần đọc lại toàn bộ codebase. Mọi handoff cũng phải có owner tiếp theo và issue link.
-
