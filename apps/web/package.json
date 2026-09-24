@@ -1,16 +1,31 @@
 {
-  "name": "@pokerlingo/web", "private": true, "version": "0.1.0",
+  "name": "@pokerlingo/web",
+  "private": true,
+  "version": "0.1.0",
   "scripts": {
-    "dev": "next dev", "build": "next build", "start": "next start",
-    "lint": "tsc -p tsconfig.json", "typecheck": "tsc -p tsconfig.json", "test": "vitest run --passWithNoTests"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@auth/drizzle-adapter": "^1.7.4", "@pokerlingo/contracts": "workspace:*",
-    "@pokerlingo/db": "workspace:*", "drizzle-orm": "^0.38.3", "next": "^15.1.3",
-    "next-auth": "^5.0.0-beta.25", "react": "^19.0.0",
-    "react-dom": "^19.0.0", "resend": "^4.1.2", "zod": "^3.24.1"
+    "@auth/drizzle-adapter": "^1.7.4",
+    "@pokerlingo/contracts": "workspace:*",
+    "@pokerlingo/db": "workspace:*",
+    "@pokerlingo/math": "workspace:*",
+    "drizzle-orm": "^0.38.3",
+    "next": "^15.1.3",
+    "next-auth": "^5.0.0-beta.25",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "resend": "^4.1.2",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@types/react": "^19.0.3", "@types/react-dom": "^19.0.2", "vitest": "^2.1.8"
+    "@types/react": "^19.0.3",
+    "@types/react-dom": "^19.0.2",
+    "vitest": "^2.1.8"
   }
 }

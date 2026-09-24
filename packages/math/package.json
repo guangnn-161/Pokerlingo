@@ -1,0 +1,11 @@
+{
+  "name": "@pokerlingo/math",
+  "version": "0.1.0",
+  "private": true,
+  "exports": { ".": "./src/index.ts" },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "devDependencies": { "vitest": "^2.1.8" }
+}

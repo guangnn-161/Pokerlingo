@@ -19,17 +19,20 @@ export default async function Home() {
       <p style={{ fontSize: "1.15rem", maxWidth: 660, lineHeight: 1.6 }}>
         Luyện ra quyết định, hiểu EV và xây dựng trực giác toán học vững vàng hơn cho các trò chơi có yếu tố may rủi.
       </p>
-      {learner ? <div style={{ display: "flex", gap: ".75rem", alignItems: "center", flexWrap: "wrap" }}>
-        <span>Đã đăng nhập với <strong>{learner.name ?? learner.email ?? "người học"}</strong>.</span>
-        <Link href="/profile">Mở hồ sơ</Link>
-        <Link href="/api/me">Thông tin phiên đăng nhập</Link>
-      </div> : <Link href="/login" style={{ display: "inline-block", marginTop: ".5rem", padding: ".7rem 1rem", background: "#171717", color: "white", borderRadius: 8, textDecoration: "none" }}>Đăng nhập để lưu tiến độ</Link>}
+      <div style={{ display: "flex", gap: ".75rem", alignItems: "center", flexWrap: "wrap" }}>
+        <Link href="/demo" style={{ display: "inline-block", padding: ".7rem 1rem", background: "#a16207", color: "white", borderRadius: 8, textDecoration: "none", fontWeight: 700 }}>Mở demo học tập</Link>
+        {learner ? <>
+          <span>Đã đăng nhập với <strong>{learner.name ?? learner.email ?? "người học"}</strong>.</span>
+          <Link href="/profile">Mở hồ sơ</Link>
+          <Link href="/api/me">Thông tin phiên đăng nhập</Link>
+        </> : <Link href="/login" style={{ color: "#171717" }}>Đăng nhập để lưu tiến độ</Link>}
+      </div>
     </section>
 
     <section aria-label="Khu vực học" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "1rem" }}>
-      <article style={cardStyle}><h2>Luyện quyết định</h2><p>Các tình huống poker và blackjack sẽ được xây dựng tại đây. Mỗi đáp án ghi rõ giả định và giải thích EV.</p></article>
-      <article style={cardStyle}><h2>Phòng thí nghiệm toán</h2><p>Khám phá xác suất, tỷ lệ cược, phương sai và giá trị kỳ vọng trước khi áp dụng vào bàn chơi.</p></article>
-      <article style={cardStyle}><h2>Tiến độ hằng ngày</h2><p>Câu đố mỗi ngày, nhiệm vụ, cấp bậc và bạn bè sẽ gắn với hồ sơ tài khoản của bạn.</p></article>
+      <article style={cardStyle}><h2>Luyện quyết định</h2><p>Demo đã có một poker spot: chọn action, nhận EV loss và lời giải thích. Các scenario thật sẽ được đội C đưa vào sau.</p></article>
+      <article style={cardStyle}><h2>Phòng thí nghiệm toán</h2><p>Package toán demo tách riêng khỏi UI: pot odds/EV poker, blackjack cơ bản, house edge roulette và overround.</p></article>
+      <article style={cardStyle}><h2>Tiến độ hằng ngày</h2><p>Demo hiển thị XP, quest, leaderboard và friends bằng mock có contract rõ ràng để đội D hoàn thiện giao diện.</p></article>
     </section>
   </main>;
 }
