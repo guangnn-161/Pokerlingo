@@ -14,22 +14,22 @@ export default async function Home() {
 
   return <main style={{ maxWidth: 920, margin: "4rem auto", fontFamily: "system-ui", padding: "0 1rem", color: "#171717" }}>
     <section style={{ marginBottom: "2.5rem" }}>
-      <p style={{ color: "#a16207", fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", margin: 0 }}>Poker · Blackjack · Probability</p>
+      <p style={{ color: "#a16207", fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", margin: 0 }}>Poker · Blackjack · Xác suất</p>
       <h1 style={{ fontSize: "clamp(2.25rem, 6vw, 4rem)", margin: ".35rem 0 .75rem" }}>Pokerlingo</h1>
       <p style={{ fontSize: "1.15rem", maxWidth: 660, lineHeight: 1.6 }}>
-        Practice decisions, understand EV, and build a safer mathematical intuition for games of chance.
+        Luyện ra quyết định, hiểu EV và xây dựng trực giác toán học vững vàng hơn cho các trò chơi có yếu tố may rủi.
       </p>
       {learner ? <div style={{ display: "flex", gap: ".75rem", alignItems: "center", flexWrap: "wrap" }}>
-        <span>Signed in as <strong>{learner.name ?? learner.email ?? "learner"}</strong>.</span>
-        <Link href="/profile">Open profile</Link>
-        <Link href="/api/me">Session API</Link>
-      </div> : <Link href="/login" style={{ display: "inline-block", marginTop: ".5rem", padding: ".7rem 1rem", background: "#171717", color: "white", borderRadius: 8, textDecoration: "none" }}>Sign in to save progress</Link>}
+        <span>Đã đăng nhập với <strong>{learner.name ?? learner.email ?? "người học"}</strong>.</span>
+        <Link href="/profile">Mở hồ sơ</Link>
+        <Link href="/api/me">Thông tin phiên đăng nhập</Link>
+      </div> : <Link href="/login" style={{ display: "inline-block", marginTop: ".5rem", padding: ".7rem 1rem", background: "#171717", color: "white", borderRadius: 8, textDecoration: "none" }}>Đăng nhập để lưu tiến độ</Link>}
     </section>
 
-    <section aria-label="Learning areas" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "1rem" }}>
-      <article style={cardStyle}><h2>Decision practice</h2><p>Scenario engines for poker and blackjack will live here. Each answer records assumptions and explains the EV.</p></article>
-      <article style={cardStyle}><h2>Math lab</h2><p>Explore probability, odds, variance and expected value before applying them at the table.</p></article>
-      <article style={cardStyle}><h2>Daily progress</h2><p>Daily puzzles, missions, ranks and friends are designed to attach to your account profile.</p></article>
+    <section aria-label="Khu vực học" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "1rem" }}>
+      <article style={cardStyle}><h2>Luyện quyết định</h2><p>Các tình huống poker và blackjack sẽ được xây dựng tại đây. Mỗi đáp án ghi rõ giả định và giải thích EV.</p></article>
+      <article style={cardStyle}><h2>Phòng thí nghiệm toán</h2><p>Khám phá xác suất, tỷ lệ cược, phương sai và giá trị kỳ vọng trước khi áp dụng vào bàn chơi.</p></article>
+      <article style={cardStyle}><h2>Tiến độ hằng ngày</h2><p>Câu đố mỗi ngày, nhiệm vụ, cấp bậc và bạn bè sẽ gắn với hồ sơ tài khoản của bạn.</p></article>
     </section>
   </main>;
 }
