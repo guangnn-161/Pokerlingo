@@ -3,7 +3,7 @@
 ## What changed
 - **B — Math:** `packages/math` là package thuần v1 với parser/evaluator/equity NLHE heads-up, range/blocker, poker EV/rake, Blackjack infinite-deck EV, casino payout/roulette/sportsbook math và fixed-seed risk simulation. API calculator: `POST /api/math/calculate`.
 - **C — Learning:** API fixture cho scenario, attempt scoring và dashboard không cần database.
-- **D — Product UI:** `/demo` là vertical slice tiếng Việt: answer → result → XP/quest/leaderboard/friends.
+- **D — Product UI:** `/demo` là vertical slice tiếng Việt có bàn poker 6-max: vị trí, stack, pot, hole cards của Hero và bài úp đối thủ, sau đó answer → result → XP/quest/leaderboard/friends.
 
 ## Contract
 - DTO demo nằm ở `@pokerlingo/contracts/demo`.
