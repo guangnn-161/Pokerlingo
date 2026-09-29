@@ -49,7 +49,7 @@ export default function Home() {
             <p>
               Hold’em, Omaha, Short Deck and Stud.
               <br />
-              Random hands, calculated EV and guided examples.
+              Six-max bots, random EV drills and guided examples.
             </p>
             <div className="game-tags">
               <span>4 poker variants</span>

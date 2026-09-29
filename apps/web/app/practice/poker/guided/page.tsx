@@ -3,7 +3,7 @@ import { PokerTrainer } from "../poker-trainer";
 export default function Page() {
   return (
     <>
-      <Link className="text-link" href="/practice/poker">
+      <Link className="text-link" href="/practice/poker/random">
         ← Random practice in four variants
       </Link>
       <PokerTrainer />

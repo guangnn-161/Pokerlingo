@@ -1,27 +1,42 @@
-# Advanced training — continuation pipeline
+# Pokerlingo advanced training — continuation pipeline
 
-User objective: blackjack card-counting practice and instruction; random poker practice graded by computed EV; a genuine GTO table; Hold’em, Omaha, Short Deck and Seven-card Stud. User confirmed all four variants and delegated the choice of a reasonable GTO model.
+Updated 2026-09-30. User scope: Hi-Lo counting and guide; generated poker decisions graded from calculated EV; GTO tables; Hold’em, Omaha, Short Deck and Stud; a six-player table with five distinct bot styles; publish to main and preserve small Markdown checkpoints.
 
-Branch: `codex/pokerlingo-advanced-training`, based on production merge `ff191e8`. Worktree is the existing `work/pokerlingo` checkout in this chat. Preserve the original checkout at D:\Pokerlingo. Earlier redesign is live at https://pokerlingo-wheat.vercel.app.
+## Current checkpoint
 
-## Checkpoints
+Implementation complete; final build, CI, preview and public deployment checks remain. Branch `codex/pokerlingo-advanced-training`. PR https://github.com/guangnn-161/Pokerlingo/pull/3. Use this chat's `work/pokerlingo` checkout; do not alter the dirty original D:\Pokerlingo.
 
-1. VERIFIED LOCALLY — Hi-Lo flash drills, true-count quizzes, persistent-shoe blackjack table, instructions. Five engine tests cover tags, hidden cards, split accounting, shuffle and normalization. Browser verified single-card and three-card quizzes, auto deal/pause, persistent live shoe and mobile layout.
-2. IMPLEMENTED — Four variant evaluators and randomized EV exercises. Runtime cards/board/price/range, deterministic seed replay, exact complete-board results and 2,400-sample earlier-street equity. Close decisions are excluded from accuracy. Browser checked Hold’em river and Omaha/Short Deck/Stud earlier-street EV feedback. 12 new engine tests pass.
-3. IMPLEMENTED — Heads-up push/fold solver, exact blocker weights and 169-hand table. Regret matching with independent best-response gap audit; 7 solver tests pass. Browser 10 BB result: 58.5% SB shove coverage, 37.3% BB call coverage, 0.00003 BB gap after 500 iterations. Sampled input equity uncertainty is disclosed separately; no full-game GTO claim.
-4. READY FOR PREVIEW — Navigation, lobby and three lessons integrated. All 63 tests, workspace typecheck, project lint command and production build pass (lint currently runs TypeScript). GTO desktop/mobile and counting/Stud mobile reviewed with no page overflow; GTO scrolls internally. Production build generates all new routes. Next: preview, CI and public deployment. Coverage percentage not measured; no new database/auth changes.
+## Completed modules and evidence
 
-## Validation gate
+1. Hi-Lo: `/practice/counting` flash drills (1/2/6 decks, batch 1/3, auto/pause, hide/review), RC/TC quizzes; `/practice/blackjack?counting=1` retains a shoe across rounds and cuts at 75%; `/learn/card-counting` explains tags, normalization and limitations. Five tests cover hidden dealer cards, split accounting, shuffle and count arithmetic. Browser: K = -1/-1.0; 4c 3s Kc = +1/+1.1; live next hand retained shoe 1 and 8 exposed cards.
+2. Random EV: `/practice/poker/random`, four variants, random cards/price/range, seed replay, 2,400-sample equity before final street, exact final-street range equity, uncertainty-aware grading. Twelve engine tests. Browser verified all four variants, exact and sampled feedback; Stud mobile shows all seven cards. Six-seat context: four folded opponents, one remaining assumed range.
+3. GTO: `/practice/gto`, heads-up Hold’em push/fold only, 2–20 BB options, 169 hands, SB/BB frequencies, exact card-removal dealing probabilities, sampled input equities with attribution, numerical best-response audit. Seven solver tests. Browser 10 BB: 58.5% SB, 37.3% BB, gap 0.00003 BB, 500 iterations; production-build worker rendered all 169 cells. Scope and input uncertainty disclosed.
+4. Six-max table: `/practice/poker`, full Hold’em against Atlas (tight aggressive), Nova (loose aggressive), Moss (calling station), Iris (tight passive), Blaze (maniac). Blinds 1/2, 200-chip starting stacks, rotating button, calls/checks/raises/folds/all-ins, reopening, multiway runouts, side pots, odd chips and uncalled returns. Bots receive only own cards and public state. Thirteen tests cover rules, 50 consecutive simulated hands, chip conservation, hidden-information isolation and distinct profile decisions. Browser completed a hand through all four streets and showdown; next hand retained opponent stacks, reloaded empty hero and rotated dealer. Mobile 390 px reviewed.
+5. Lobby/navigation and lessons integrated. Guided examples remain at `/practice/poker/guided`.
 
-Meaningful engine tests, full workspace typecheck, production build, browser UI checks for each requirement, CI and deployed smoke checks. Completion is not proven by tests of only a subset. Keep goal active until all four checkpoints are implemented and verified.
+## Validation and release gate
 
-## Sources and assumptions
+- PASS: 76 tests (34 math + 42 web), workspace typecheck, diff whitespace review. Project lint is TypeScript, not a separate ESLint suite. Coverage percentage not measured.
+- PASS: fresh production build after six-max addition. A CSS compatibility warning was corrected to flex-end; CI will rebuild the final revision.
+- TODO: push current work, update PR description, verify latest CI and Vercel preview on the exact new head; merge without bypassing failures; verify production alias and features in browser.
+- TODO: save screenshots and final release evidence to this chat's `outputs`, update the user-facing pipeline copy and mark the active goal complete only after every requirement is verified.
+- No auth/database changes or migrations in this release. Practice only, no payments or wagers. Bot strategies are heuristics, not full-game GTO.
 
-- Hi-Lo: https://wizardofodds.com/games/blackjack/card-counting/high-low/ (tags 2–6 +1, 7–9 zero, T–A −1; running count / remaining decks).
-- Omaha: https://www.pokerstars.com/poker/games/omaha/ (exactly two hole cards and three board cards).
-- Short Deck: https://www.pokerstars.com/poker/games/six-plus/ — flush above full house, straight above trips, A6789 low straight.
-- Stud: https://www.pokerstars.com/poker/games/stud/ — individual seven-card hands, best five, no community board.
-- Solver reference: https://proceedings.neurips.cc/paper/2007/file/08d98638c6fcd194a4b1e6992063e944-Paper.pdf
-- Sampled equity inputs: https://github.com/Julian-cloud-max/holdemmath-data (CC BY 4.0; attribution/license and pinned commit in packages/math/data/README.md). Only equities reused; solver implemented here.
+## Resume procedure
 
-Engine checkpoints: counting 7686d32, four variants 9adaf96, solver 3efead9. Browser verified K count −1/−1.0; three-card 4c 3s Kc gives +1/+1.1; live count +2/+0.3 and next hand retains shoe 1 with 8 exposed cards. Dev server stopped before successful production build. Next: commit UI/docs, push PR, wait for CI and preview verification, merge and verify production. Preserve progress in this file and the user-facing copy under outputs. Do not modify the dirty original D:\Pokerlingo checkout.
+Inspect git status and PR #3 first. Reuse existing checkout. Stop only this checkout's server before rebuilding `.next`. The development server was stopped for final build. Poll the existing build handle if running rather than restarting on timeout. Open a fresh browser tab if the previous session's tab is missing. Use Vercel project `prj_8eilfnM1JHo0sCJVaLEo9KQdgg1t`, team `team_aayAeSDHmNCCuysz1RoENBUG`; production https://pokerlingo-wheat.vercel.app. Do not put temporary preview access tokens into files.
+
+## Checkpoint commits
+
+- 7686d32 counting; 9adaf96 variant engine; 3efead9 solver/data; e87c364 advanced UI (old head passed CI and preview).
+- Six-max engine/tests and UI/docs are separate commits following e87c364. Check git log for their final IDs.
+
+## Primary references
+
+- https://wizardofodds.com/games/blackjack/card-counting/high-low/
+- https://www.pokerstars.com/poker/games/omaha/
+- https://www.pokerstars.com/poker/games/six-plus/ (flush above full house, straight above trips, A6789)
+- https://www.pokerstars.com/poker/games/stud/
+- https://www.pokertda.com/view-poker-tda-rules/ (full raise and cumulative short-all-in reopening)
+- https://github.com/Julian-cloud-max/holdemmath-data (CC BY 4.0; pinned revision and license in packages/math/data)
+- https://proceedings.neurips.cc/paper/2007/file/08d98638c6fcd194a4b1e6992063e944-Paper.pdf

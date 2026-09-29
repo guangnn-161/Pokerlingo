@@ -126,6 +126,9 @@ export function RandomPokerTrainer() {
         </Link>
       </div>
       <div className="tabs">
+        <Link className="button secondary" href="/practice/poker">
+          Six-player table ↗
+        </Link>
         <span className="button primary">Random situations</span>
         <Link className="button secondary" href="/practice/poker/guided">
           Guided examples ↗
@@ -218,12 +221,26 @@ export function RandomPokerTrainer() {
         <div className="practice-layout">
           <section className="table-panel">
             <div className="table-toolbar">
-              <strong>{variantNames[result.spot.variant]}</strong>
+              <strong>{variantNames[result.spot.variant]} · 6 seats</strong>
               <span>{result.spot.street}</span>
             </div>
             <div className="random-table">
+              <div
+                className="folded-seats"
+                aria-label="Four other seats have folded"
+              >
+                {[3, 4, 5, 6].map((n) => (
+                  <span key={n}>
+                    SEAT {n}
+                    <small>Folded</small>
+                  </span>
+                ))}
+              </div>
               <div className="random-opponent">
-                <p>OPPONENT · {result.spot.opponents.length} POSSIBLE HANDS</p>
+                <p>
+                  SEAT 2 · OPPONENT · {result.spot.opponents.length} POSSIBLE
+                  HANDS
+                </p>
                 <div className="card-row">
                   {result.spot.variant === "stud"
                     ? result.spot.visibleOpponent.map((c, i) => (
@@ -253,7 +270,7 @@ export function RandomPokerTrainer() {
                 <span>Including opponent’s bet</span>
               </div>
               <div className="random-hero">
-                <p>YOUR {result.spot.hero.length} CARDS</p>
+                <p>SEAT 1 · YOUR {result.spot.hero.length} CARDS</p>
                 <div className="card-row">
                   {result.spot.hero.map((c) => (
                     <PlayingCard card={c} key={c} />
@@ -388,9 +405,12 @@ export function RandomPokerTrainer() {
         </div>
       )}
       <p className="notice">
-        These are generated decision exercises with an explicit opponent model.
-        EV accuracy depends on that model. They are separate from the heads-up
-        push/fold equilibrium tables and are not full-game GTO solutions.
+        Each drill starts at a six-seat table after four players have folded.
+        Their cards are unknown; the displayed range is the one remaining
+        opponent. These are generated decision exercises with an explicit
+        opponent model. EV accuracy depends on that model. They are separate
+        from the heads-up push/fold equilibrium tables and are not full-game GTO
+        solutions.
       </p>
     </>
   );

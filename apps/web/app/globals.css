@@ -819,6 +819,8 @@ summary:focus-visible {
   margin: 0 9px;
 }
 .skip-link {
+  opacity: 0;
+  pointer-events: none;
   position: fixed;
   top: -100px;
   left: 20px;
@@ -828,6 +830,8 @@ summary:focus-visible {
   padding: 10px;
 }
 .skip-link:focus {
+  opacity: 1;
+  pointer-events: auto;
   top: 10px;
 }
 .content-panel {
@@ -2071,6 +2075,283 @@ summary {
 .gto-cell.chosen {
   outline: 2px solid var(--lime);
   outline-offset: 1px;
+}
+.bot-layout {
+  grid-template-columns: minmax(0, 1fr) 300px;
+}
+.six-table {
+  position: relative;
+  isolation: isolate;
+  height: 720px;
+  background: radial-gradient(ellipse, #234437, #101b17 80%);
+  overflow: hidden;
+}
+.six-felt {
+  position: absolute;
+  inset: 90px 40px;
+  border: 12px solid #435041;
+  border-radius: 45%;
+  background: radial-gradient(ellipse, #26704e, #173d2d);
+  box-shadow:
+    0 0 0 4px #14221a,
+    inset 0 0 45px #102719;
+  z-index: -1;
+}
+.six-center {
+  position: absolute;
+  top: 46%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  text-align: center;
+}
+.six-center p {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #c3d3b9;
+}
+.six-center .card-row {
+  justify-content: center;
+  gap: 5px;
+  margin: 13px 0;
+}
+.six-center strong,
+.six-center small {
+  display: block;
+  margin: 5px 0;
+}
+.six-center strong {
+  font-size: 21px;
+  color: #f1f4dc;
+}
+.six-center small {
+  color: #c4d5c0;
+}
+.six-seat {
+  position: absolute;
+  width: 142px;
+  padding: 10px 8px;
+  border: 1px solid #53604e;
+  border-radius: 12px;
+  background: #17231ef5;
+  text-align: center;
+  box-shadow: 0 5px 15px #0005;
+}
+.six-seat.acting {
+  outline: 2px solid var(--lime);
+  box-shadow: 0 0 22px #c8ed7538;
+}
+.six-seat.folded {
+  opacity: 0.58;
+}
+.six-seat .card-row {
+  justify-content: center;
+  gap: 3px;
+  margin: 8px 0;
+}
+.six-seat small {
+  display: block;
+  font-size: 9px;
+  color: #b5c5af;
+}
+.six-seat strong {
+  font-size: 12px;
+}
+.six-seat .seat-action {
+  margin-top: 5px;
+  min-height: 24px;
+  color: #d1e8aa;
+}
+.seat-name {
+  display: flex;
+  gap: 7px;
+  justify-content: center;
+  align-items: center;
+  font-size: 13px;
+}
+.seat-name span {
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: #eef1dd;
+  color: #263325;
+  font-size: 10px;
+  line-height: 19px;
+}
+.six-seat-0 {
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.six-seat-1 {
+  bottom: 120px;
+  left: 12px;
+}
+.six-seat-2 {
+  top: 100px;
+  left: 12px;
+}
+.six-seat-3 {
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.six-seat-4 {
+  top: 100px;
+  right: 12px;
+}
+.six-seat-5 {
+  bottom: 120px;
+  right: 12px;
+}
+.raise-control {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin: 18px 0;
+}
+.raise-control .field {
+  max-width: 170px;
+}
+.raise-control small {
+  flex-basis: 100%;
+  color: var(--muted);
+}
+.table-playback {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 15px;
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+  margin-top: 22px;
+  font-size: 12px;
+}
+.table-playback input {
+  width: auto;
+}
+.bot-roster > div {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.bot-roster strong {
+  font-size: 12px;
+  color: var(--lime);
+}
+.bot-roster p {
+  font-size: 12px;
+  margin: 5px 0;
+}
+.bot-roster small {
+  color: #b8c2ad;
+}
+.hand-history {
+  max-height: 430px;
+  overflow-y: auto;
+  padding-left: 20px;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.folded-seats {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+.folded-seats > span {
+  border: 1px solid #78908155;
+  border-radius: 9px;
+  padding: 7px 12px;
+  color: #a8bbae;
+  font-size: 9px;
+  text-align: center;
+}
+.folded-seats small {
+  display: block;
+  margin-top: 3px;
+  color: #859e8d;
+}
+@media (max-width: 1200px) {
+  .bot-layout {
+    grid-template-columns: 1fr;
+  }
+  .bot-layout > .coach-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 700px) {
+  .bot-layout > .coach-panel {
+    display: flex;
+    flex-direction: column;
+  }
+  .six-table {
+    height: 740px;
+  }
+  .six-felt {
+    inset: 65px 12px;
+    border-width: 7px;
+    border-radius: 40%;
+  }
+  .six-seat {
+    width: 110px;
+    padding: 8px 4px;
+  }
+  .six-seat-1,
+  .six-seat-2 {
+    left: 7px;
+  }
+  .six-seat-4,
+  .six-seat-5 {
+    right: 7px;
+  }
+  .six-seat-2,
+  .six-seat-4 {
+    top: 165px;
+  }
+  .six-seat-1,
+  .six-seat-5 {
+    bottom: 155px;
+  }
+  .six-seat-0 {
+    bottom: 6px;
+  }
+  .six-seat-3 {
+    top: 6px;
+  }
+  .six-seat .playing-card.small {
+    width: 30px;
+    height: 43px;
+  }
+  .six-center {
+    top: 50%;
+    width: 100%;
+  }
+  .six-center .playing-card.small {
+    width: 33px;
+    height: 47px;
+  }
+  .six-seat .card-pip {
+    font-size: 17px;
+  }
+  .six-center .card-pip {
+    font-size: 18px;
+  }
+  .six-center p {
+    margin-bottom: 5px;
+  }
+  .six-center .card-row {
+    margin: 7px 0;
+  }
+  .six-center strong {
+    font-size: 16px;
+  }
+  .six-center small {
+    font-size: 10px;
+  }
 }
 .gto-layout .content-panel {
   min-width: 0;
