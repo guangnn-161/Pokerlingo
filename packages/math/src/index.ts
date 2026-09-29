@@ -1,4 +1,9 @@
-export { ENGINE_VERSION, calculationResult, assertFinite, assertProbability } from "./types";
+export {
+  ENGINE_VERSION,
+  calculationResult,
+  assertFinite,
+  assertProbability,
+} from "./types";
 export type { CalculationMethod, CalculationResult } from "./types";
 export {
   assertDistinctCardGroups,
@@ -8,9 +13,25 @@ export {
   formatCard,
   fullDeck,
   parseCard,
-  parseCards
+  parseCards,
 } from "./cards";
 export type { Card, Rank, Suit } from "./cards";
+export {
+  variantNames,
+  variantDeck,
+  evaluateVariant,
+  seededRandom,
+  shuffleCards,
+  calculateVariantEquity,
+  generatePokerSpot,
+  gradePokerDecision,
+} from "./variants";
+export type {
+  PokerVariant,
+  VariantEquityInput,
+  VariantEquityResult,
+  RandomPokerSpot,
+} from "./variants";
 export {
   betEvBb,
   callEvBb,
@@ -22,22 +43,41 @@ export {
   netWinRateAfterRake,
   pokerRake,
   removeBlockers,
-  requiredEquity
+  requiredEquity,
 } from "./poker";
-export type { EquityInput, EquityOutput, HandCategory, HandRank, RangeCombo } from "./poker";
+export type {
+  EquityInput,
+  EquityOutput,
+  HandCategory,
+  HandRank,
+  RangeCombo,
+} from "./poker";
 export {
   BLACKJACK_6D_S17_DAS_LS,
   blackjackBasicStrategy,
   blackjackLegalActions,
-  evaluateBlackjack
+  evaluateBlackjack,
 } from "./blackjack";
-export type { BlackjackAction, BlackjackActionValue, BlackjackInput, BlackjackOutput, BlackjackRecommendation, BlackjackRules } from "./blackjack";
+export type {
+  BlackjackAction,
+  BlackjackActionValue,
+  BlackjackInput,
+  BlackjackOutput,
+  BlackjackRecommendation,
+  BlackjackRules,
+} from "./blackjack";
 export {
   analyzePayoutTable,
   rouletteEvenMoneyAnalysis,
   rouletteHouseEdge,
   simulateFixedStakeRisk,
   sportsbookMarket,
-  sportsbookOverround
+  sportsbookOverround,
 } from "./casino";
-export type { PayoutAnalysis, PayoffOutcome, RiskSimulationInput, RiskSimulationOutput, RouletteWheel } from "./casino";
+export type {
+  PayoutAnalysis,
+  PayoffOutcome,
+  RiskSimulationInput,
+  RiskSimulationOutput,
+  RouletteWheel,
+} from "./casino";
