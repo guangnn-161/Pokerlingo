@@ -1,91 +1,76 @@
-# Pokerlingo redesign — pipeline và điểm tiếp tục
+# Pokerlingo — pipeline tiếp tục
 
-Cập nhật: 2026-09-29. Đây là tài liệu bàn giao công việc, không phải xác nhận tất cả tính năng đã hoàn thành.
+Cập nhật: 2026-09-29. Tài liệu này là trạng thái hiện tại; thay thế các ghi chú checkpoint cũ.
 
-## Yêu cầu đã chốt
+## Mục tiêu và quyết định
 
-- Thiết kế lại Pokerlingo với bàn poker và blackjack ảo có tương tác; trang kiến thức toán học cho cả hai môn.
-- Tham khảo cấu trúc luyện tập của https://app.pokertrainer.se/lobby và https://blackjack-trainer.net/; không sao chép nội dung/UI.
-- Giao diện sản phẩm bằng tiếng Anh, theo yêu cầu đã chốt trong chat trước. Trao đổi với người dùng bằng tiếng Việt.
-- Học qua quyết định và phản hồi ngay; giữ rõ giả định tính EV, ruleset và giới hạn của mô hình.
-- Chia việc thành chặng nhỏ, mỗi chặng chạy được và có checkpoint. Cập nhật tài liệu này trước khi dừng.
+Thiết kế lại Pokerlingo thành nơi học poker và blackjack bằng bàn ảo, phản hồi quyết định và kiến thức toán học. Giao diện tiếng Anh theo chat trước; trao đổi và bàn giao bằng tiếng Việt. Tham khảo https://app.pokertrainer.se/lobby và https://blackjack-trainer.net/ về cách luyện tập, không sao chép giao diện/nội dung.
 
-## Các chat đã đọc
+Đã đọc chat `Xây dựng platform` (6ab400bc-17fc-83ec-85b8-2831a0bdf49f) và `Quy trình xây dựng web poker` (6ab3d046-79a0-83ec-935b-276b22781e98). Bản cũ có demo một tình huống và math API. Giữ kiến trúc Next.js/Vercel cùng auth/profile/API hiện hữu. Roadmap XP, friends, leaderboard, multiplayer không nằm trong phạm vi đợt redesign này.
 
-1. `Xây dựng platform` — 6ab400bc-17fc-83ec-85b8-2831a0bdf49f.
-2. `Quy trình xây dựng web poker` — 6ab3d046-79a0-83ec-935b-276b22781e98.
+## Nơi làm việc
 
-Bản trước: /demo có một tình huống preflop, feedback/EV dạng fixture. Math engine đã có API nhưng chưa có UI. Roadmap cũ có auth, XP, nhiệm vụ, bạn bè, leaderboard và nhiều biến thể poker. Không trình bày dữ liệu mock là dữ liệu thật; giữ auth/API hiện có. Những phần roadmap ngoài yêu cầu hiện tại không phải điều kiện hoàn thành redesign này.
+- Repo: https://github.com/guangnn-161/Pokerlingo
+- Branch: `codex/pokerlingo-trainers`, base `8181ed4`.
+- Checkout: `C:\Users\Guang\Documents\Codex\2026-09-29\https-github-com-worldflowai-everything-claude\work\pokerlingo`.
+- Checkout gốc `D:\Pokerlingo` có thay đổi riêng của người dùng: không reset/clean/ghi đè.
+- Dùng Git worktree thủ công sau khi công cụ managed worktree báo chat projectless không có repo.
+- Stack: pnpm 9.15.4, Next.js 15, React 19; packages/contracts, db, math.
+- Skills đã áp dụng: frontend-patterns, verification-loop, Vercel React/Next.js guidance. Bộ 11 skills ECC đã được cài ở chặng trước; không cài Claude hooks vào Codex.
 
-## Mã nguồn và bảo toàn dữ liệu
+## Các chặng có điểm dừng độc lập
 
-- GitHub: https://github.com/guangnn-161/Pokerlingo
-- Production hiện hữu: https://pokerlingo-wheat.vercel.app
-- Checkout gốc: `D:\Pokerlingo` (có thay đổi chưa commit của người dùng; không reset/clean/ghi đè).
-- Checkout làm việc: `C:\Users\Guang\Documents\Codex\2026-09-29\https-github-com-worldflowai-everything-claude\work\pokerlingo`
-- Branch: `codex/pokerlingo-trainers`, base `8181ed4` từ `origin/main`.
-- Worktree tạo bằng Git vì công cụ managed worktree trả `Not a git repository` cho chat projectless này.
-- Chưa push, chưa deploy bản thiết kế mới.
-- Stack: pnpm 9.15.4 workspace, Next.js 15, React 19; packages/contracts, packages/db, packages/math.
-- Không chuyển dự án sang Sites; tiếp tục kiến trúc Vercel hiện có.
-- Bản `.env` cục bộ của checkout gốc không được sao chép hay in nội dung.
+| Chặng | Trạng thái | Sản phẩm và điều kiện hoàn thành |
+| --- | --- | --- |
+| 1. Sảnh và khung | Xong | Sidebar, lobby, navigation, bộ thẻ bài/chips, tiến độ browser-local, desktop/mobile CSS |
+| 2. Poker | Xong | 9 tình huống Preflop/Pot odds/River, bàn 6-max, chọn đáp án, giải thích, next/replay; /demo mở trainer mới |
+| 3. Blackjack | Xong | Deal/hit/stand/double/split/surrender; 6 decks, S17/H17, DAS, LS, 3:2/6:5, kết toán chips và coach |
+| 4. Kiến thức/toán | Xong | 8 bài học, quiz, ghi nhận học xong; pot odds, outs, bluff, equity API, blackjack EV API, expected loss |
+| 5. Kiểm tra và bàn giao | Đang chốt | Typecheck/tests/build; browser desktop/mobile; lưu ảnh; push branch, PR và xác minh preview |
 
-## Pipeline theo chặng
+Checkpoint Git đầu tiên: `a870e94` — sảnh và hai bàn thực hành. Checkpoint tiếp theo chứa thư viện, Math Lab và kết quả QA; xem `git log -5 --oneline` để lấy mã mới nhất.
 
-### 1. Sảnh và khung giao diện — ĐANG LÀM
+## Giới hạn sản phẩm phải giữ rõ
 
-- [x] Đọc hai chat cũ, tìm repo và cập nhật remote refs.
-- [x] Tạo checkout riêng từ main mới nhất.
-- [x] Tạo AppShell, PlayingCard, Chips và bộ lưu tiến độ trên trình duyệt.
-- [x] Viết trang lobby gồm bàn poker/blackjack và đường dẫn học toán.
-- [ ] Hoàn thiện globals.css, kiểm tra desktop/mobile và điều hướng.
-- [ ] Typecheck/build phù hợp; lưu checkpoint commit.
+- Poker là bộ tình huống biên soạn, chưa phải engine chơi trọn hand với bot/GTO solver. Preflop có teaching policy; EV chỉ xuất hiện khi có giả định tính được.
+- Blackjack chơi trọn round, shoe 6 bộ được xáo lại mỗi round; một lần split thành 2 hand, split ace nhận 1 lá; dealer peek. Coach là chart multi-deck total-dependent, không phải solver composition/count; không tuyên bố mọi rule variant/giới hạn split đều tối ưu chính xác.
+- Math Lab blackjack là mô hình infinite-deck trước dealer peek, khác trạng thái bàn chơi sau peek; UI phải giữ nhãn này. Xác suất và EV không đảm bảo kết quả một ván.
+- Tiến độ bài học/quyết định lưu trong localStorage theo browser. Chưa đồng bộ tài khoản. Chips không có giá trị tiền thật.
+- Auth và DB thật chưa được kiểm tra end-to-end; không nói đã xác minh chỉ vì build thành công. Không sao chép/in secrets từ checkout gốc.
 
-**Điểm tiếp tục ngay:** app/layout.tsx đã import `./globals.css` nhưng file CSS CHƯA tồn tại. Các link /practice/poker, /practice/blackjack, /learn, /math CHƯA được triển khai. Cần tạo CSS và các trang đích có nội dung hữu ích trước khi bàn giao.
+## Bản đồ mã
 
-### 2. Bàn poker — CHƯA LÀM
+- `apps/web/app/globals.css`: hệ màu, responsive, tables, cards, library/math.
+- `apps/web/components/app-shell.tsx`, `playing-card.tsx`, `progress.tsx`: shell, đồ họa và local progress.
+- `apps/web/app/practice/{poker,blackjack}`: giao diện hai bàn.
+- `apps/web/lib/poker-drills.ts`: câu hỏi poker, giả định và EV.
+- `apps/web/lib/blackjack-game.ts`: luật/chip settlement/chart, độc lập React.
+- `apps/web/lib/blackjack-game.test.ts`: 24 tests engine/chart/curriculum.
+- `apps/web/lib/lessons.ts`, `app/learn`, `components/lesson-quiz.tsx`: 8 bài gốc, ví dụ, quiz, nguồn.
+- `apps/web/app/math/math-lab.tsx`: máy tính và request đến API hiện hữu.
+- `packages/math/src/index.test.ts`: 15 tests math engine có sẵn.
 
-- Bàn 6-max, vị trí, bài hero, board, pot, stack, hành động.
-- Nhiều tình huống preflop/flop/turn/river, có chọn nhóm bài tập.
-- Chọn hành động → feedback + lý do + giả định + bài tiếp theo/replay.
-- Chỉ hiển thị EV khi có phép tính/giả định minh bạch; chart heuristics không gọi là GTO.
-- Kiểm tra mọi tình huống, card uniqueness, số tiền và chấm điểm không lặp do double click.
-- /demo tiếp tục hoạt động, có thể trở thành alias cho bàn poker mới.
-- Lưu checkpoint commit và trạng thái vào tài liệu này.
+## Kiểm tra đã xác minh
 
-### 3. Bàn blackjack — CHƯA LÀM
+- `pnpm typecheck`: PASS trên toàn workspace.
+- `pnpm test`: PASS 39 tests (15 math + 24 game/curriculum). DB/contracts chưa có tests. Chưa đo coverage.
+- Production build cuối: PASS 27 trang. Diff whitespace check PASS; không có lỗi console trong các luồng đã kiểm tra.
+- Browser: poker Raise đúng, chuyển nhóm pot odds; blackjack Deal → Hit → Stand → dealer bust → +10 chips và score; rule controls khóa trong ván.
+- Math API qua UI: equity mặc định 45.3% với 3,000 mẫu seeded; blackjack có bảng EV và surrender; direct request từ chối duplicate poker cards với 422.
+- Bài học: đáp án sai có giải thích, đổi đáp án đúng, đánh dấu hoàn thành, reload vẫn giữ trạng thái.
+- QA mobile 390 × 844: poker và blackjack không tràn ngang; đã kiểm tra đổi H17 và khóa rules khi deal. Replay/next poker hoạt động. UI Math Lab hiển thị Duplicate card As cho dữ liệu sai. Ảnh bàn poker, lobby và mobile lưu tại outputs của chat. Còn xác minh preview trên Vercel.
 
-- Chơi trọn ván bằng practice chips: deal, hit, stand, double, split, surrender.
-- Ruleset hiển thị và có tùy chỉnh S17/H17, DAS, surrender, payout.
-- Dealer peek, natural blackjack, soft ace, split ace, payout, bust, push được xử lý nhất quán.
-- Coach chấm theo basic strategy phù hợp ruleset; kiểm tra các tình huống biên.
-- Có tests độc lập cho quy tắc và chip settlement; kiểm tra trình duyệt.
-- Lưu checkpoint commit và trạng thái vào tài liệu này.
+## Quy trình chạy lại
 
-### 4. Thư viện kiến thức và Math Lab — CHƯA LÀM
+Trong checkout làm việc: `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm test`, `pnpm build`.
+Build cục bộ cần biến DATABASE_URL vì module DB import lúc build; dùng database thử nghiệm. Build không chứng minh kết nối DB hoạt động. Không ghi thông tin đăng nhập vào tài liệu.
+Chạy preview: `pnpm --filter @pokerlingo/web start --hostname 127.0.0.1 --port 3100` sau build. Không chạy dev/build đồng thời trên cùng thư mục `.next`.
 
-- Poker: pot odds, equity/outs, EV, combo/range/blocker, bluff, variance/rake.
-- Blackjack: hard/soft, basic strategy, EV, rule effects, payout, house edge/variance.
-- Bài học có công thức, ví dụ, câu hỏi kiểm tra và link nguồn.
-- Máy tính pot odds/call EV; equity heads-up kết nối engine; blackjack EV; expected loss với house edge nhập vào.
-- Thông báo loading/error, validation đầu vào và ghi rõ approximation của engine.
-- Nguồn đã xem: Wizard of Odds basic strategy calculator; MIT OCW 18.05 Probability and Statistics.
-- Lưu checkpoint commit và trạng thái vào tài liệu này.
+## Cách nối tiếp mà không mất công
 
-### 5. Tích hợp và bàn giao — CHƯA LÀM
+1. Đọc tài liệu này, `git status`, `git log -5 --oneline`; bảo toàn mọi thay đổi chưa commit.
+2. Ưu tiên hoàn thành chặng 5 trước khi thêm tính năng. Chỉ đánh dấu xong khi có kết quả kiểm tra cụ thể.
+3. Mỗi phần mới nên vừa một checkpoint: engine → UI → kiểm tra → commit → cập nhật pipeline.
+4. Trước khi dừng, ghi rõ file đang sửa, lệnh đang chạy, lỗi còn lại và bước kế tiếp. Không để ghi chú cũ mâu thuẫn với trạng thái mới.
+5. Nếu mở rộng: ưu tiên poker full-hand engine, thêm drill packs và progress sync theo từng chặng riêng; không gộp multiplayer/leaderboard vào cùng một lần sửa.
 
-- Test math engine và logic game; typecheck cả workspace; production build.
-- Kiểm tra trực tiếp các luồng trên trình duyệt và responsive, không chỉ syntax.
-- Lưu báo cáo kiểm tra và screenshot trong outputs.
-- Tạo bản review/PR hoặc deploy preview theo quyền kết nối thực có; báo rõ nếu cần user action.
-- Không tuyên bố production đã cập nhật khi chưa xác minh URL.
-
-## Trạng thái môi trường
-
-`pnpm install --no-frozen-lockfile` đã được khởi chạy trong checkout làm việc; cần kiểm tra kết quả session trước bước phụ thuộc. Nếu session không còn tồn tại, kiểm tra node_modules/lockfile rồi chạy lại khi cần.
-
-Các file vừa tạo/sửa: apps/web/components/{app-shell,playing-card,progress}.tsx; apps/web/app/{layout,page}.tsx; apps/web/app/icon.svg.
-
-## Cách tiếp tục ở chat mới
-
-Đọc tài liệu này và `git status` trước. Đọc docs trong repo và mã liên quan đến chặng hiện tại. Không đọc lại toàn bộ lịch sử hay làm lại phần đã kiểm tra. Làm xong một chặng, chạy kiểm tra tương ứng, lưu checkpoint, rồi cập nhật mục trạng thái và bước tiếp theo. Nếu gần hết context/token, ưu tiên hoàn tất và ghi lại chặng hiện tại thay vì mở thêm tính năng.

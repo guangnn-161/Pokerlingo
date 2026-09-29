@@ -1,0 +1,317 @@
+export type Lesson = {
+  id: string;
+  game: "Poker" | "Blackjack" | "Foundations";
+  title: string;
+  subtitle: string;
+  minutes: number;
+  formula: string;
+  sections: { title: string; paragraphs: string[] }[];
+  example: { title: string; text: string };
+  quiz: { question: string; options: string[]; correct: number; why: string };
+  sources: { label: string; url: string }[];
+};
+const probability = {
+  label: "MIT OpenCourseWare · Probability and Statistics",
+  url: "https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2022/",
+};
+const bj = {
+  label: "Wizard of Odds · Basic strategy calculator",
+  url: "https://wizardofodds.com/games/blackjack/strategy/calculator/",
+};
+const rules = {
+  label: "Wizard of Odds · Rule variations",
+  url: "https://wizardofodds.com/games/blackjack/rule-variations/",
+};
+export const lessons: Lesson[] = [
+  {
+    id: "pot-odds",
+    game: "Poker",
+    title: "What is a call really worth?",
+    subtitle: "Translate a price in chips into the equity you need.",
+    minutes: 5,
+    formula: "Required equity = call / (pot before call + call)",
+    sections: [
+      {
+        title: "Start at the decision, not the start of the hand",
+        paragraphs: [
+          "Let P be the pot already available, including your opponent’s latest bet. Let C be the additional amount you must call. A call puts P + C in the middle. Your earlier contributions are sunk costs: they belong to the pot and do not make a losing call profitable.",
+          "If you always reach showdown after calling, your expected net gain is qP − (1 − q)C, where q is your equity. Set that expression to zero and solve: q = C / (P + C). Folding has zero additional EV at this decision point.",
+        ],
+      },
+      {
+        title: "Know when the formula is enough",
+        paragraphs: [
+          "This comparison directly fits a river call or an all-in with no future betting. Before the river, a non-all-in call may face more bets. Raw equity is not the same as equity you can actually realize.",
+          "Implied odds add potential future winnings; reverse implied odds add potential future losses. Rake reduces the pot you can win. Do not hide these effects inside a falsely precise percentage.",
+        ],
+      },
+    ],
+    example: {
+      title: "A 25 BB bet into a 50 BB pot",
+      text: "The pot is now 75 BB. Calling costs 25 BB, making the final pot 100 BB. You need 25%. With 30% equity and no rake, call EV is 0.30 × 100 − 25 = +5 BB.",
+    },
+    quiz: {
+      question:
+        "The pot is 30 BB including the opponent’s bet. You must call 10 BB. What equity breaks even?",
+      options: ["20%", "25%", "33.3%"],
+      correct: 1,
+      why: "10 / (30 + 10) = 25%. Do not divide the call by the current pot alone.",
+    },
+    sources: [probability],
+  },
+  {
+    id: "equity-outs",
+    game: "Poker",
+    title: "From outs to equity",
+    subtitle: "Count the cards that help—and the assumptions you are making.",
+    minutes: 6,
+    formula: "P(hit by river) = 1 − ((47 − outs)/47) × ((46 − outs)/46)",
+    sections: [
+      {
+        title: "Count clean outs",
+        paragraphs: [
+          "An out is an unseen card that improves your hand to a winner. With two hole cards and three flop cards visible, 47 cards are unseen. A four-card flush draw has nine remaining cards of that suit. But a card that makes your flush can still lose to a better flush or a later full house.",
+          "With one card to come on the turn, eight clean outs give 8/46 = 17.39%. With nine outs on the flop, the complement of missing twice is 1 − (38/47)(37/46) = 34.97%. This counts hitting at least once, not automatically winning at showdown.",
+        ],
+      },
+      {
+        title: "Equity includes the whole range",
+        paragraphs: [
+          "Heads-up equity is P(win) + ½P(tie). It evaluates all ways your hand can win, lose or tie against an opponent’s hand or weighted range. The opponent’s known cards, if exposed, also reduce the unseen-card pool.",
+          "The rule of four on the flop and two on the turn are shortcuts, not exact formulas. Two-card odds are relevant only if both cards are available for the price you are evaluating. Use the Math Lab for a hand-vs-hand estimate with explicit board cards.",
+        ],
+      },
+    ],
+    example: {
+      title: "A draw that misses more often than it hits",
+      text: "At 34.97% equity, a 5 BB call into a 15 BB pot returns about +1.99 BB under the clean-outs, no-rake all-in model. Winning most hands is not required for a profitable call.",
+    },
+    quiz: {
+      question:
+        "With nine clean outs and only the river to come, your hit probability is approximately…",
+      options: ["19.6%", "35.0%", "36.0%"],
+      correct: 0,
+      why: "Nine of 46 unseen cards help: 9/46 ≈ 19.6%. The two-card chance does not apply on the turn.",
+    },
+    sources: [probability],
+  },
+  {
+    id: "ranges-blockers",
+    game: "Poker",
+    title: "Think in combinations",
+    subtitle:
+      "A range is a collection of possible hands, not one guessed hand.",
+    minutes: 6,
+    formula: "Pair: C(4,2) = 6 · Suited: 4 · Offsuit: 12",
+    sections: [
+      {
+        title: "Count what can actually be there",
+        paragraphs: [
+          "There are 1,326 unordered two-card combinations in a 52-card deck. We often group them into 169 starting-hand classes: 13 pairs, 78 suited classes and 78 offsuit classes. These classes are not equally frequent.",
+          "A pocket pair has six combinations. A specific suited non-pair hand such as AKs has four; AKo has twelve. If you hold an ace, only three aces remain, so the opponent has three possible AA combinations instead of six.",
+        ],
+      },
+      {
+        title: "Weight the range with the action",
+        paragraphs: [
+          "Position, stack depth and the betting sequence inform which combinations belong in an opponent’s range. Some hands may take an action only part of the time. Weight each surviving combination, then normalize after removing blockers.",
+          "A blocker is useful only in relation to the range it removes. Blocking value hands can help a bluff; blocking hands that would fold can hurt it. One attractive blocker does not establish a bluff by itself. The opening exercises use a stated teaching policy rather than solver frequencies.",
+        ],
+      },
+    ],
+    example: {
+      title: "Holding A♠ against a possible AA range",
+      text: "The six initial AA combinations shrink to A♥A♦, A♥A♣ and A♦A♣. Card removal changes the available combinations; it does not prove that the opponent cannot have aces.",
+    },
+    quiz: {
+      question:
+        "How many combinations does a pocket pair have before any blockers are known?",
+      options: ["4", "6", "12"],
+      correct: 1,
+      why: "Choose two of the four suits: 4 × 3 / 2 = 6.",
+    },
+    sources: [probability],
+  },
+  {
+    id: "expected-value",
+    game: "Foundations",
+    title: "Good decisions. Uncertain outcomes.",
+    subtitle:
+      "Use expected value to evaluate the process, not a single result.",
+    minutes: 5,
+    formula: "E[X] = Σ pᵢxᵢ",
+    sections: [
+      {
+        title: "Average the net outcomes",
+        paragraphs: [
+          "Expected value is the probability-weighted average of net gains and losses. If a game wins 2 units with probability 0.4 and loses 1 unit otherwise, its EV is 0.4 × 2 − 0.6 × 1 = +0.2 units. That does not mean any individual play returns 0.2.",
+          "Use net profit, not a mix of gross payouts and net losses. A returned stake is not profit. In poker, evaluate new money committed at the decision point. In blackjack, express returns per original stake so doubling and splitting remain comparable.",
+        ],
+      },
+      {
+        title: "A useful decision can still lose",
+        paragraphs: [
+          "A positive-EV poker call can lose this hand; a negative-EV call can win it. Review your estimate of the opponent’s range and the information available when you acted. Do not rewrite that information after seeing the cards.",
+          "In blackjack, every legal move in a difficult spot can have negative EV. The best move is the least negative. Basic strategy reduces expected losses under a ruleset; it does not imply an overall player advantage.",
+        ],
+      },
+    ],
+    example: {
+      title: "Calling with 30% equity",
+      text: "With 75 BB available and 25 BB to call, the net outcomes are +75 on a win and −25 on a loss. EV = 0.30 × 75 − 0.70 × 25 = +5 BB. This is the same as 0.30 × 100 − 25.",
+    },
+    quiz: {
+      question:
+        "An action wins 3 units 25% of the time and loses 1 unit otherwise. What is its EV?",
+      options: ["−0.25 units", "0 units", "+0.75 units"],
+      correct: 1,
+      why: "0.25 × 3 − 0.75 × 1 = 0. A fair expectation still permits large short-run swings.",
+    },
+    sources: [probability],
+  },
+  {
+    id: "bluff-math",
+    game: "Poker",
+    title: "The price of a bluff",
+    subtitle:
+      "Find the fold frequency a pure bluff needs before adding a story.",
+    minutes: 5,
+    formula: "Break-even folds = bet / (pot + bet)",
+    sections: [
+      {
+        title: "Two outcomes, one threshold",
+        paragraphs: [
+          "For a pure bluff with no winning equity when called, let P be the pot, B the bet and f the probability the opponent folds. A fold wins P; a call loses B. The bluff’s EV is fP − (1 − f)B. Set it to zero to find f = B/(P + B).",
+          "A half-pot bluff needs more than one-third folds; a pot-sized bluff needs more than half. Larger bets can cause more folds, but that response is an assumption to estimate—not a consequence of the formula.",
+        ],
+      },
+      {
+        title: "Distinguish a bluff from a semi-bluff",
+        paragraphs: [
+          "A semi-bluff can also win when called. Its EV must include that showdown equity, the opponent’s matching contribution and future action. The simple pure-bluff formula leaves those out.",
+          "Minimum defense frequency is often written P/(P + B), the complement of the pure-bluff threshold. It is a simplified indifference benchmark, not a command to defend that frequency in every real spot. Ranges, position, future streets and opponent tendencies matter.",
+        ],
+      },
+    ],
+    example: {
+      title: "Betting 10 into 20",
+      text: "At a 40% fold rate and zero equity when called: 0.40 × 20 − 0.60 × 10 = +2 BB. At only 25% folds, the same bluff is worth −2.5 BB.",
+    },
+    quiz: {
+      question:
+        "A pot-sized pure bluff with no equity needs the opponent to fold more than…",
+      options: ["25%", "33.3%", "50%"],
+      correct: 2,
+      why: "B = P, so B/(P + B) = 1/2.",
+    },
+    sources: [probability],
+  },
+  {
+    id: "blackjack-strategy",
+    game: "Blackjack",
+    title: "Learn the decision, not the outcome",
+    subtitle:
+      "Hard totals, soft totals and pairs each ask a different question.",
+    minutes: 6,
+    formula: "Best action = arg maxₐ E[net return | hand, upcard, rules]",
+    sections: [
+      {
+        title: "Read your hand correctly",
+        paragraphs: [
+          "A soft hand has an ace currently counted as 11. A + 6 is soft 17; add a ten and it becomes hard 17 because the ace must count as 1. A hard hand has no such cushion. Pairs can create a separate splitting decision.",
+          "Start with the dealer’s upcard and the rules. In a multi-deck S17 game, hard 12 hits against a dealer 3 but stands against 4. Soft 18 can double against 6 when legal, stand against 8 and hit against 9. The same total alone does not determine the action.",
+        ],
+      },
+      {
+        title: "Why the rules must travel with the chart",
+        paragraphs: [
+          "S17 means the dealer stands on soft 17; H17 means the dealer hits it. Double-after-split and late-surrender rules also change decisions. A chart from a different ruleset can recommend a different move.",
+          "Our table deals from six decks, allows at most two split hands and gives split aces one extra card. The coach uses a multi-deck, total-dependent reference. It does not make card-counting or composition-dependent adjustments. The separate EV lab uses an infinite-deck model and may differ near close decisions.",
+        ],
+      },
+    ],
+    example: {
+      title: "A dealer 6 is not permission to stand on everything",
+      text: "With hard 11, doubling adds one equal stake and takes exactly one card. With hard 16, standing avoids extra bust risk. A strategy decision depends on your hand as well as the weak dealer upcard.",
+    },
+    quiz: {
+      question: "You have A + 6, then draw a ten. Your hand is…",
+      options: ["Busted at 27", "Hard 17", "Soft 17"],
+      correct: 1,
+      why: "The ace changes from 11 to 1: 1 + 6 + 10 = 17. There is no ace still counted as 11.",
+    },
+    sources: [bj],
+  },
+  {
+    id: "house-edge",
+    game: "Blackjack",
+    title: "Small rules. Real differences.",
+    subtitle: "Understand payout, house edge and the cost of repeated play.",
+    minutes: 6,
+    formula: "Expected loss = total original wagers × house edge",
+    sections: [
+      {
+        title: "Read the payout before the cards",
+        paragraphs: [
+          "On a 10-unit original bet, a 3:2 natural pays 15 units of profit; 6:5 pays 12. That is a 3-unit difference each time you receive a paying natural. Ordinary winning hands and split 21s pay even money at our table.",
+          "Rule changes shift the expectation. There is no one house-edge percentage for all blackjack. Number of decks, soft-17 policy, payouts, splitting, surrender and the player’s decisions all matter. A payout comparison alone does not produce the entire game’s edge.",
+        ],
+      },
+      {
+        title: "Use expected loss as an average, not a forecast",
+        paragraphs: [
+          "House edge measures the house’s expected gain relative to the stated betting basis. If the edge is 0.5% per original wager, 200 rounds at 10 units imply 200 × 10 × 0.005 = 10 units of expected loss. The 0.5% here is an illustration, not a certified edge for our rules.",
+          "Changing a bet progression does not remove a negative per-unit expectation. More wagering generally increases expected loss when the edge is positive. A player can finish ahead or far behind the expected amount over a short session.",
+        ],
+      },
+    ],
+    example: {
+      title: "One natural, two payout rules",
+      text: "Both games return the 10-unit stake. The 3:2 game also pays 15 units; the 6:5 game pays 12. Compare the 15 and 12 as net profit, not 25 and 12.",
+    },
+    quiz: {
+      question:
+        "At an assumed 1% edge, what is the expected loss on 100 original bets of 10 units?",
+      options: ["1 unit", "10 units", "100 units"],
+      correct: 1,
+      why: "100 × 10 × 0.01 = 10. This is an expectation, not a guaranteed session result.",
+    },
+    sources: [rules],
+  },
+  {
+    id: "variance-rake",
+    game: "Foundations",
+    title: "The average is not the journey",
+    subtitle: "Variance explains swings. Rake changes the average itself.",
+    minutes: 6,
+    formula: "Var(X) = E[X²] − E[X]²",
+    sections: [
+      {
+        title: "Measure the spread",
+        paragraphs: [
+          "Two strategies can have the same expected return and very different variability. Variance measures the average squared deviation from the mean; its square root is standard deviation, expressed in the original units.",
+          "For n independent, identically distributed rounds with mean μ and standard deviation σ, the sum has mean nμ and standard deviation √nσ. Poker results are not always independent or identically distributed: player pools, stakes, strategy and fatigue can change.",
+        ],
+      },
+      {
+        title: "Separate fees from random swings",
+        paragraphs: [
+          "Rake is a cost taken from poker pots. If 5% rake is capped at 3 BB, a 100 BB eligible pot pays 3 BB rather than 5 BB. At the same showdown equity, a smaller net pot makes a marginal call less attractive.",
+          "Variance can make a losing strategy look successful for a while. Fees can turn a small pre-rake edge negative. Track assumptions and decision quality across many observations; a short winning streak is weak evidence of an edge.",
+        ],
+      },
+    ],
+    example: {
+      title: "A fair ±1 game",
+      text: "Win 1 with probability 1/2 and lose 1 otherwise. The mean is zero, E[X²] is 1 and variance is 1. After 100 independent rounds, expected total is 0 while standard deviation is 10 units.",
+    },
+    quiz: {
+      question:
+        "An eligible 100 BB pot has 5% rake capped at 3 BB. How much rake is taken?",
+      options: ["3 BB", "5 BB", "8 BB"],
+      correct: 0,
+      why: "min(100 × 0.05, 3) = 3 BB. The cap limits the fee.",
+    },
+    sources: [probability],
+  },
+];
