@@ -26,9 +26,9 @@ Thiết kế lại Pokerlingo thành nơi học poker và blackjack bằng bàn 
 | 2. Poker | Xong | 9 tình huống Preflop/Pot odds/River, bàn 6-max, chọn đáp án, giải thích, next/replay; /demo mở trainer mới |
 | 3. Blackjack | Xong | Deal/hit/stand/double/split/surrender; 6 decks, S17/H17, DAS, LS, 3:2/6:5, kết toán chips và coach |
 | 4. Kiến thức/toán | Xong | 8 bài học, quiz, ghi nhận học xong; pot odds, outs, bluff, equity API, blackjack EV API, expected loss |
-| 5. Kiểm tra và bàn giao | Đang chốt | Typecheck/tests/build; browser desktop/mobile; lưu ảnh; push branch, PR và xác minh preview |
+| 5. Kiểm tra và bàn giao | Xong | 39 tests, typecheck, production build, CI GitHub PASS; desktop/mobile QA; preview Vercel READY; PR #2 |
 
-Checkpoint Git đầu tiên: `a870e94` — sảnh và hai bàn thực hành. Checkpoint tiếp theo chứa thư viện, Math Lab và kết quả QA; xem `git log -5 --oneline` để lấy mã mới nhất.
+Checkpoint Git đầu tiên: `a870e94` — sảnh và hai bàn thực hành. Checkpoint `40efb9c` chứa thư viện, Math Lab và QA. Checkpoint tài liệu cuối cập nhật trạng thái bàn giao; xem `git log -5 --oneline` để lấy mã mới nhất.
 
 ## Giới hạn sản phẩm phải giữ rõ
 
@@ -58,7 +58,7 @@ Checkpoint Git đầu tiên: `a870e94` — sảnh và hai bàn thực hành. Che
 - Browser: poker Raise đúng, chuyển nhóm pot odds; blackjack Deal → Hit → Stand → dealer bust → +10 chips và score; rule controls khóa trong ván.
 - Math API qua UI: equity mặc định 45.3% với 3,000 mẫu seeded; blackjack có bảng EV và surrender; direct request từ chối duplicate poker cards với 422.
 - Bài học: đáp án sai có giải thích, đổi đáp án đúng, đánh dấu hoàn thành, reload vẫn giữ trạng thái.
-- QA mobile 390 × 844: poker và blackjack không tràn ngang; đã kiểm tra đổi H17 và khóa rules khi deal. Replay/next poker hoạt động. UI Math Lab hiển thị Duplicate card As cho dữ liệu sai. Ảnh bàn poker, lobby và mobile lưu tại outputs của chat. Còn xác minh preview trên Vercel.
+- QA mobile 390 × 844: poker và blackjack không tràn ngang; đã kiểm tra đổi H17 và khóa rules khi deal. Replay/next poker hoạt động. UI Math Lab hiển thị Duplicate card As cho dữ liệu sai. Ảnh bàn poker, lobby và mobile lưu tại outputs của chat. Preview Vercel READY và đã mở trên browser. Equity API online trả đúng 45.3% cho mẫu mặc định; GitHub Actions CI run 76 PASS.
 
 ## Quy trình chạy lại
 
@@ -69,8 +69,19 @@ Chạy preview: `pnpm --filter @pokerlingo/web start --hostname 127.0.0.1 --port
 ## Cách nối tiếp mà không mất công
 
 1. Đọc tài liệu này, `git status`, `git log -5 --oneline`; bảo toàn mọi thay đổi chưa commit.
-2. Ưu tiên hoàn thành chặng 5 trước khi thêm tính năng. Chỉ đánh dấu xong khi có kết quả kiểm tra cụ thể.
+2. Cả 5 chặng redesign đã hoàn tất ở bản preview. Tiếp theo là review bản mới và quyết định đưa vào production; chưa merge PR #2. Nếu user yêu cầu phát hành, kiểm tra CI/head mới nhất rồi thực hiện theo quyền đã cấp.
 3. Mỗi phần mới nên vừa một checkpoint: engine → UI → kiểm tra → commit → cập nhật pipeline.
 4. Trước khi dừng, ghi rõ file đang sửa, lệnh đang chạy, lỗi còn lại và bước kế tiếp. Không để ghi chú cũ mâu thuẫn với trạng thái mới.
 5. Nếu mở rộng: ưu tiên poker full-hand engine, thêm drill packs và progress sync theo từng chặng riêng; không gộp multiplayer/leaderboard vào cùng một lần sửa.
 
+## Đường dẫn bàn giao
+
+- PR draft: https://github.com/guangnn-161/Pokerlingo/pull/2
+- Preview đã kiểm tra (app commit 40efb9c): https://pokerlingo-fj8211i9v-guang7.vercel.app
+- Alias theo branch: https://pokerlingo-git-codex-pokerlingo-trainers-guang7.vercel.app
+- Preview bật Vercel Authentication. Chủ tài khoản đăng nhập Vercel hoặc tạo temporary share URL qua connector. Không lưu share token vào Git.
+- Production https://pokerlingo-wheat.vercel.app vẫn là bản trước; chưa merge/publish redesign vào production.
+- Local preview http://127.0.0.1:3100 chạy qua phiên terminal 7229 ở thời điểm bàn giao; phiên có thể không còn sau khi đóng ứng dụng.
+- Ảnh và bản pipeline cho người dùng nằm trong thư mục outputs của chat: pokerlingo-lobby.png, pokerlingo-poker-table.png, pokerlingo-mobile.png, pokerlingo-pipeline.md.
+
+Không còn phần code dang dở của 5 chặng này. Các giới hạn đã ghi ở trên là phạm vi đợt hiện tại, không phải tính năng đã triển khai.
