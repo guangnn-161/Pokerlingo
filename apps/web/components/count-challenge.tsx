@@ -24,8 +24,9 @@ export function CountChallenge({
   return (
     <div className="count-challenge">
       <p>
-        Unseen cards: {unseen} · {(unseen / 52).toFixed(2)} decks. Use this
-        exact denominator; round your true count to one decimal.
+        Unseen cards: {unseen} · about {(unseen / 52).toFixed(2)} decks. Divide
+        unseen cards by 52 first, then divide your running count by that value.
+        Round your true count to one decimal.
       </p>
       <form
         onSubmit={(e) => {

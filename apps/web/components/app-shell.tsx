@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 const navigation = [
   { href: "/", icon: "◈", label: "Training lobby" },
   { href: "/practice/poker", icon: "♠", label: "Poker table" },
+  { href: "/practice/gto", icon: "▦", label: "GTO tables" },
   { href: "/practice/blackjack", icon: "♣", label: "Blackjack table" },
   { href: "/practice/counting", icon: "±", label: "Card counting" },
   { href: "/learn", icon: "▤", label: "Learning library" },
@@ -29,7 +30,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Link
               key={n.href}
               href={n.href}
-              className={`nav-item ${path === n.href || (n.href === "/learn" && path.startsWith("/learn/")) || (n.href === "/practice/poker" && path === "/demo") ? "active" : ""}`}
+              className={`nav-item ${path === n.href || (n.href === "/learn" && path.startsWith("/learn/")) || (n.href === "/practice/poker" && (path === "/demo" || path.startsWith("/practice/poker/"))) ? "active" : ""}`}
               aria-current={path === n.href ? "page" : undefined}
             >
               <span className="nav-icon" aria-hidden="true">
