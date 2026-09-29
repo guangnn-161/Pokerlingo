@@ -3,6 +3,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { PlayingCard, Chips } from "@/components/playing-card";
 import { recordDecision } from "@/components/progress";
+import { CountChallenge } from "@/components/count-challenge";
+import {
+  advanceCountingShoe,
+  emptyCountingShoe,
+  shoeCount,
+} from "@/lib/card-counting";
 import {
   createRound,
   playAction,
@@ -14,7 +20,9 @@ import {
   type Round,
   type TableRules,
 } from "@/lib/blackjack-game";
-export function BlackjackTrainer() {
+export function BlackjackTrainer({ counting = false }: { counting?: boolean }) {
+  const [shoe, setShoe] = useState(emptyCountingShoe);
+  const [countScore, setCountScore] = useState({ total: 0, correct: 0 });
   const [rules, setRules] = useState<TableRules>(defaultRules),
     [round, setRound] = useState<Round | null>(null),
     [net, setNet] = useState(0),
@@ -28,9 +36,14 @@ export function BlackjackTrainer() {
     [error, setError] = useState("");
   const playing = round?.phase === "playing",
     legal = round ? legalActions(round) : [];
+  const count = shoeCount({ ...shoe, round });
   function deal() {
     try {
-      const next = createRound(rules);
+      const nextShoe = counting
+        ? advanceCountingShoe({ ...shoe, round }, rules)
+        : null;
+      const next = nextShoe?.round ?? createRound(rules);
+      if (nextShoe) setShoe(nextShoe);
       setRound(next);
       setFeedback(null);
       setHint(false);
@@ -65,7 +78,9 @@ export function BlackjackTrainer() {
     <>
       <div className="page-heading">
         <div>
-          <p className="eyebrow">BLACKJACK / BASIC STRATEGY</p>
+          <p className="eyebrow">
+            BLACKJACK / {counting ? "LIVE SHOE COUNTING" : "BASIC STRATEGY"}
+          </p>
           <h1>
             One hand.
             <br />
@@ -80,6 +95,32 @@ export function BlackjackTrainer() {
           Study the strategy ↗
         </Link>
       </div>
+      <div className="tabs">
+        <Link
+          className={`button ${counting ? "secondary" : "primary"}`}
+          href="/practice/blackjack"
+        >
+          Basic strategy
+        </Link>
+        <Link
+          className={`button ${counting ? "primary" : "secondary"}`}
+          href="/practice/blackjack?counting=1"
+        >
+          Count a live shoe
+        </Link>
+        <Link className="button secondary" href="/practice/counting">
+          Counting flash drills ↗
+        </Link>
+      </div>
+      {counting && (
+        <p className="notice">
+          Shoe {shoe.number || 1} · {count.seen} cards exposed ·{" "}
+          {(count.unseen / 52).toFixed(2)} unseen decks. Keep your running count
+          across rounds. Shuffle at the 75% cut card, before the next hand. A
+          hidden hole card remains unknown.{" "}
+          <Link href="/learn/card-counting">Read the guide ↗</Link>
+        </p>
+      )}
       <div className="practice-layout">
         <div className="table-panel">
           <div className="table-toolbar">
@@ -208,6 +249,30 @@ export function BlackjackTrainer() {
           </div>
         </div>
         <aside className="coach-panel">
+          {counting && (
+            <section className="coach-card">
+              <p className="eyebrow">HI-LO COUNT CHECK</p>
+              <h3>What is your count now?</h3>
+              <p>
+                Correct checkpoints: {countScore.correct} / {countScore.total}
+              </p>
+              {round ? (
+                <CountChallenge
+                  key={`${shoe.number}-${count.seen}`}
+                  running={count.running}
+                  unseen={count.unseen}
+                  onCheck={(correct) =>
+                    setCountScore((s) => ({
+                      total: s.total + 1,
+                      correct: s.correct + Number(correct),
+                    }))
+                  }
+                />
+              ) : (
+                <p>Deal a hand to begin. Count only visible cards.</p>
+              )}
+            </section>
+          )}
           <div
             className={`coach-card ${feedback ? (feedback.correct ? "correct" : "incorrect") : ""}`}
             aria-live="polite"
@@ -319,8 +384,10 @@ export function BlackjackTrainer() {
             </div>
             <p className="quiet">
               Change between rounds. One split; split aces receive one card
-              each. Dealer checks for blackjack first. A fresh 6-deck shoe is
-              shuffled each round.
+              each. Dealer checks for blackjack first.{" "}
+              {counting
+                ? "The six-deck shoe persists until the cut card, then the count resets at the next deal."
+                : "A fresh 6-deck shoe is shuffled each round."}
             </p>
             <Link className="text-link" href="/learn/house-edge">
               Why the rules change the math ↗

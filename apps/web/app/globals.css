@@ -1861,3 +1861,43 @@ summary:focus-visible {
   color: var(--bg);
   font-weight: 700;
 }
+.count-stage {
+  min-height: 280px;
+  padding: 45px 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 22px;
+  background: radial-gradient(ellipse at center, #235743, #152a22);
+}
+.count-challenge .button {
+  margin: 15px 0;
+}
+.count-challenge p {
+  font-size: 13px;
+}
+.count-feedback {
+  padding: 15px;
+  border: 1px solid var(--lime);
+  border-radius: 10px;
+  margin: 12px 0;
+}
+.count-history {
+  max-height: 220px;
+  overflow: auto;
+  overflow-wrap: anywhere;
+}
+.count-stage .card-row {
+  min-height: 100px;
+}
+.tabs {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tabs .button {
+  white-space: normal;
+}
+.notice {
+  margin-bottom: 20px;
+}

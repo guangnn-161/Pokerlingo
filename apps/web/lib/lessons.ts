@@ -24,6 +24,61 @@ const rules = {
 };
 export const lessons: Lesson[] = [
   {
+    id: "card-counting",
+    game: "Blackjack",
+    title: "Track the shoe, not a lucky streak",
+    subtitle: "Learn Hi-Lo with running-count and true-count exercises.",
+    minutes: 8,
+    formula: "True count = running count ÷ unseen decks",
+    sections: [
+      {
+        title: "Recognize three groups",
+        paragraphs: [
+          "Hi-Lo assigns +1 to ranks 2 through 6, zero to 7 through 9, and −1 to tens, face cards and aces. Start at zero after a shuffle. Add each exposed card once, including other hands and the dealer’s cards when revealed.",
+          "A complete deck has twenty positive tags and twenty negative tags, so its total is zero. Cancel a low card against a high card mentally. Never count a face-down card as if you knew its rank.",
+        ],
+      },
+      {
+        title: "Normalize the count",
+        paragraphs: [
+          "A running count describes the exposed cards. A positive count means low cards have been removed disproportionately. Divide by decks still unseen to express concentration. Running +6 with 3 decks unseen gives true +2; the same running +6 with 1.5 decks unseen gives +4.",
+          "This trainer uses exact unseen-card totals divided by 52, including a hidden dealer hole card, and grades true count to one decimal. Real-table deck estimation is a separate skill. Integer conversion methods differ across index systems: do not mix rounding conventions.",
+        ],
+      },
+      {
+        title: "A practice routine",
+        paragraphs: [
+          "Begin with single-card batches at a slow pace. Pause after several cards, hide the current cards, enter both counts and check the explanation. Move to three-card batches after you stop making tag errors. Review the exposed-card history to find the first missed sign.",
+          "Next use Count a live shoe at the blackjack table. The shoe survives between rounds and shuffles at the 75% cut card. Keep tracking while making normal play decisions. A split moves the original cards; it does not expose those cards a second time. The table reveals the dealer hand when a round ends.",
+        ],
+      },
+      {
+        title: "Separate counting from decisions",
+        paragraphs: [
+          "The count summarizes composition, not the next card. It neither guarantees a win nor specifies an exact advantage by itself. Rules, penetration, decisions and bet sizes all affect return and variance. This exercise uses fixed practice bets and grades count arithmetic separately from basic strategy.",
+          "Our basic-strategy coach does not apply count-based index deviations. A fresh independent shuffle destroys information from the previous shoe. Switch to live-shoe mode when practicing retention across hands; the ordinary table deliberately starts a fresh shoe each round.",
+        ],
+      },
+    ],
+    example: {
+      title: "Six exposed cards",
+      text: "Start at 0. The sequence 4♠, K♦, 7♣, 2♥, A♠, 6♦ gives +1, 0, 0, +1, 0, +1. Running count is +1. If 2.5 decks remain unseen, true count is +0.4. A card already on the table never changes the count simply because you look at it again.",
+    },
+    quiz: {
+      question:
+        "Running count −6 with 2.5 unseen decks: what is the true count to one decimal?",
+      options: ["−2.4", "−15.0", "+2.4"],
+      correct: 0,
+      why: "Divide −6 by 2.5. Keep the negative sign; do not multiply by the remaining decks.",
+    },
+    sources: [
+      {
+        label: "Wizard of Odds · Hi-Lo method",
+        url: "https://wizardofodds.com/games/blackjack/card-counting/high-low/",
+      },
+    ],
+  },
+  {
     id: "pot-odds",
     game: "Poker",
     title: "What is a call really worth?",

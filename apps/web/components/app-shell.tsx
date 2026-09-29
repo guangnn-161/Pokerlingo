@@ -5,6 +5,7 @@ const navigation = [
   { href: "/", icon: "◈", label: "Training lobby" },
   { href: "/practice/poker", icon: "♠", label: "Poker table" },
   { href: "/practice/blackjack", icon: "♣", label: "Blackjack table" },
+  { href: "/practice/counting", icon: "±", label: "Card counting" },
   { href: "/learn", icon: "▤", label: "Learning library" },
   { href: "/math", icon: "ƒ", label: "Math lab" },
 ];
