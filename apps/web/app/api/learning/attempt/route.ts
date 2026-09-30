@@ -59,6 +59,7 @@ export async function POST(request: Request) {
     mistakeTag: result.mistakeTag,
     durationMs: parsed.data.durationMs,
   });
+  if (!attempt) return NextResponse.json({ error: "ATTEMPT_PERSIST_FAILED" }, { status: 500 });
   await updateMastery(user.id, scenario.topic, result.score);
   await awardXp({ userId: user.id, sourceType: "attempt", sourceId: attempt.id, xpDelta: result.score >= 80 ? 10 : 5 });
 
