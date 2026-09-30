@@ -42,3 +42,39 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 export const profilesRelations = relations(profiles, ({ one }) => ({
   user: one(users, { fields: [profiles.userId], references: [users.id] })
 }));
+export const usersRelations = relations(users, ({ one, many }) => ({
+  profile: one(profiles), accounts: many(accounts), sessions: many(sessions), auditLogs: many(auditLogs),
+  attempts: many(attempts), dailyPuzzleAttempts: many(dailyPuzzleAttempts), userQuests: many(userQuests),
+  xpLedger: many(xpLedger), masteryScores: many(masteryScores),
+}));
+export const profilesRelations = relations(profiles, ({ one }) => ({
+  user: one(users, { fields: [profiles.userId], references: [users.id] })
+}));
+export const scenariosRelations = relations(scenarios, ({ many }) => ({
+  attempts: many(attempts), dailyPuzzles: many(dailyPuzzles),
+}));
+export const attemptsRelations = relations(attempts, ({ one }) => ({
+  user: one(users, { fields: [attempts.userId], references: [users.id] }),
+  scenario: one(scenarios, { fields: [attempts.scenarioId], references: [scenarios.id] }),
+}));
+export const dailyPuzzlesRelations = relations(dailyPuzzles, ({ one, many }) => ({
+  scenario: one(scenarios, { fields: [dailyPuzzles.scenarioId], references: [scenarios.id] }),
+  attempts: many(dailyPuzzleAttempts),
+}));
+export const dailyPuzzleAttemptsRelations = relations(dailyPuzzleAttempts, ({ one }) => ({
+  puzzle: one(dailyPuzzles, { fields: [dailyPuzzleAttempts.puzzleId], references: [dailyPuzzles.id] }),
+  user: one(users, { fields: [dailyPuzzleAttempts.userId], references: [users.id] }),
+}));
+export const questTemplatesRelations = relations(questTemplates, ({ many }) => ({
+  userQuests: many(userQuests),
+}));
+export const userQuestsRelations = relations(userQuests, ({ one }) => ({
+  user: one(users, { fields: [userQuests.userId], references: [users.id] }),
+  template: one(questTemplates, { fields: [userQuests.templateId], references: [questTemplates.id] }),
+}));
+export const xpLedgerRelations = relations(xpLedger, ({ one }) => ({
+  user: one(users, { fields: [xpLedger.userId], references: [users.id] }),
+}));
+export const masteryScoresRelations = relations(masteryScores, ({ one }) => ({
+  user: one(users, { fields: [masteryScores.userId], references: [users.id] }),
+}));
