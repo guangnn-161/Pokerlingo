@@ -36,39 +36,69 @@ export const auditLogs = pgTable("audit_logs", {
   action: text("action").notNull(), requestId: text("request_id").notNull(), ipHash: text("ip_hash"), metadata: text("metadata"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
 }, (table) => [index("audit_logs_user_created_idx").on(table.userId, table.createdAt)]);
+
+export const scenarioStatusEnum = pgEnum("scenario_status", ["draft", "reviewed", "published"]);
+export const questCadenceEnum = pgEnum("quest_cadence", ["daily", "weekly", "recovery"]);
+export const questStatusEnum = pgEnum("quest_status", ["active", "completed"]);
+
+export const scenarios = pgTable("scenarios", {
+  id: text("id").primaryKey(), title: text("title").notNull(), game: text("game").notNull(),
+  topic: text("topic").notNull(), difficulty: integer("difficulty").notNull(),
+  rulesVersion: text("rules_version").notNull(), stateJson: text("state_json").notNull(),
+  explanationMd: text("explanation_md").notNull(), tagsJson: text("tags_json").notNull(),
+  version: integer("version").notNull().default(1), status: scenarioStatusEnum("status").notNull().default("draft"),
+  source: text("source"), createdAt: timestamp("created_at",{withTimezone:true}).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at",{withTimezone:true}).notNull().defaultNow(),
+}, (table)=>[uniqueIndex("scenarios_version_unique").on(table.id,table.version),index("scenarios_status_topic_idx").on(table.status,table.topic)]);
+
+export const attempts = pgTable("attempts", {
+  id: uuid("id").defaultRandom().primaryKey(), userId: text("user_id").notNull().references(()=>users.id,{onDelete:"cascade"}),
+  scenarioId: text("scenario_id").notNull().references(()=>scenarios.id), scenarioVersion: integer("scenario_version").notNull(),
+  selectedActionJson: text("selected_action_json").notNull(), evLossBb: text("ev_loss_bb").notNull(),
+  score: integer("score").notNull(), mistakeTag: text("mistake_tag"), durationMs: integer("duration_ms").notNull(),
+  createdAt: timestamp("created_at",{withTimezone:true}).notNull().defaultNow(),
+}, (table)=>[index("attempts_user_created_idx").on(table.userId,table.createdAt),index("attempts_user_scenario_idx").on(table.userId,table.scenarioId)]);
+
+export const dailyPuzzles = pgTable("daily_puzzles", {
+  id: uuid("id").defaultRandom().primaryKey(), puzzleDate: text("puzzle_date").notNull(), game: text("game").notNull(),
+  scenarioId: text("scenario_id").notNull().references(()=>scenarios.id), solutionVersion: integer("solution_version").notNull(),
+  publishAt: timestamp("publish_at",{withTimezone:true}).notNull(), closeAt: timestamp("close_at",{withTimezone:true}).notNull(),
+}, (table)=>[uniqueIndex("daily_puzzles_date_game_unique").on(table.puzzleDate,table.game)]);
+
+export const dailyPuzzleAttempts = pgTable("daily_puzzle_attempts", {
+  id: uuid("id").defaultRandom().primaryKey(), puzzleId: uuid("puzzle_id").notNull().references(()=>dailyPuzzles.id,{onDelete:"cascade"}),
+  userId: text("user_id").notNull().references(()=>users.id,{onDelete:"cascade"}), evLoss: text("ev_loss").notNull(),
+  durationMs: integer("duration_ms").notNull(), isFirstAttempt: integer("is_first_attempt").notNull().default(1),
+  selectedActionJson: text("selected_action_json").notNull(), createdAt: timestamp("created_at",{withTimezone:true}).notNull().defaultNow(),
+}, (table)=>[uniqueIndex("daily_puzzle_first_score_unique").on(table.puzzleId,table.userId,table.isFirstAttempt)]);
+
+export const questTemplates = pgTable("quest_templates", {
+  id: text("id").primaryKey(), cadence: questCadenceEnum("cadence").notNull(), key: text("key").notNull(),
+  rulesJson: text("rules_json").notNull(), xpReward: integer("xp_reward").notNull(), version: integer("version").notNull().default(1),
+  active: integer("active").notNull().default(1),
+}, (table)=>[uniqueIndex("quest_template_key_version_unique").on(table.key,table.version)]);
+
+export const userQuests = pgTable("user_quests", {
+  id: uuid("id").defaultRandom().primaryKey(), userId: text("user_id").notNull().references(()=>users.id,{onDelete:"cascade"}),
+  templateId: text("template_id").notNull().references(()=>questTemplates.id), periodStart: timestamp("period_start",{withTimezone:true}).notNull(),
+  progressJson: text("progress_json").notNull(), status: questStatusEnum("status").notNull().default("active"), completedAt: timestamp("completed_at",{withTimezone:true}),
+}, (table)=>[uniqueIndex("user_quest_period_unique").on(table.userId,table.templateId,table.periodStart)]);
+
+export const xpLedger = pgTable("xp_ledger", {
+  id: uuid("id").defaultRandom().primaryKey(), userId: text("user_id").notNull().references(()=>users.id,{onDelete:"cascade"}),
+  sourceType: text("source_type").notNull(), sourceId: text("source_id").notNull(), xpDelta: integer("xp_delta").notNull(),
+  idempotencyKey: text("idempotency_key").notNull(), createdAt: timestamp("created_at",{withTimezone:true}).notNull().defaultNow(),
+}, (table)=>[uniqueIndex("xp_ledger_idempotency_unique").on(table.idempotencyKey),index("xp_ledger_user_created_idx").on(table.userId,table.createdAt)]);
+
+export const masteryScores = pgTable("mastery_scores", {
+  userId: text("user_id").notNull().references(()=>users.id,{onDelete:"cascade"}), topicKey: text("topic_key").notNull(),
+  score: integer("score").notNull().default(0), sampleCount: integer("sample_count").notNull().default(0),
+  updatedAt: timestamp("updated_at",{withTimezone:true}).notNull().defaultNow(),
+}, (table)=>[primaryKey({columns:[table.userId,table.topicKey]})]);
+
 export const usersRelations = relations(users, ({ one, many }) => ({
-  profile: one(profiles), accounts: many(accounts), sessions: many(sessions), auditLogs: many(auditLogs),
-  attempts: many(attempts), dailyPuzzleAttempts: many(dailyPuzzleAttempts), userQuests: many(userQuests),
-  xpLedger: many(xpLedger), masteryScores: many(masteryScores),
+  profile: one(profiles), accounts: many(accounts), sessions: many(sessions), auditLogs: many(auditLogs)
 }));
 export const profilesRelations = relations(profiles, ({ one }) => ({
   user: one(users, { fields: [profiles.userId], references: [users.id] })
-}));
-export const scenariosRelations = relations(scenarios, ({ many }) => ({
-  attempts: many(attempts), dailyPuzzles: many(dailyPuzzles),
-}));
-export const attemptsRelations = relations(attempts, ({ one }) => ({
-  user: one(users, { fields: [attempts.userId], references: [users.id] }),
-  scenario: one(scenarios, { fields: [attempts.scenarioId], references: [scenarios.id] }),
-}));
-export const dailyPuzzlesRelations = relations(dailyPuzzles, ({ one, many }) => ({
-  scenario: one(scenarios, { fields: [dailyPuzzles.scenarioId], references: [scenarios.id] }),
-  attempts: many(dailyPuzzleAttempts),
-}));
-export const dailyPuzzleAttemptsRelations = relations(dailyPuzzleAttempts, ({ one }) => ({
-  puzzle: one(dailyPuzzles, { fields: [dailyPuzzleAttempts.puzzleId], references: [dailyPuzzles.id] }),
-  user: one(users, { fields: [dailyPuzzleAttempts.userId], references: [users.id] }),
-}));
-export const questTemplatesRelations = relations(questTemplates, ({ many }) => ({
-  userQuests: many(userQuests),
-}));
-export const userQuestsRelations = relations(userQuests, ({ one }) => ({
-  user: one(users, { fields: [userQuests.userId], references: [users.id] }),
-  template: one(questTemplates, { fields: [userQuests.templateId], references: [questTemplates.id] }),
-}));
-export const xpLedgerRelations = relations(xpLedger, ({ one }) => ({
-  user: one(users, { fields: [xpLedger.userId], references: [users.id] }),
-}));
-export const masteryScoresRelations = relations(masteryScores, ({ one }) => ({
-  user: one(users, { fields: [masteryScores.userId], references: [users.id] }),
 }));
