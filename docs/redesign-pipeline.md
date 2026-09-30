@@ -1,6 +1,6 @@
 # Pokerlingo — pipeline tiếp tục
 
-Cập nhật: 2026-09-29. Tài liệu này là trạng thái hiện tại; thay thế các ghi chú checkpoint cũ.
+Cập nhật mốc redesign: 2026-09-29. Tài liệu này lưu trạng thái lịch sử của đợt thiết kế lại đầu tiên. Trạng thái hiện tại sau khi bổ sung bot six-max, EV cho bốn biến thể, GTO và Hi-Lo nằm ở [advanced-training-pipeline.md](advanced-training-pipeline.md), cập nhật 2026-09-30; PR #3 đã merge và public. Các giới hạn, số kiểm thử và bước bàn giao bên dưới mô tả mốc cũ, không thay thế pipeline hiện tại.
 
 ## Mục tiêu và quyết định
 

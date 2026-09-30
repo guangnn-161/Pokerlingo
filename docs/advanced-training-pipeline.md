@@ -4,7 +4,9 @@ Updated 2026-09-30. User scope: Hi-Lo counting and guide; generated poker decisi
 
 ## Current checkpoint
 
-Implementation complete; final build, CI, preview and public deployment checks remain. Branch `codex/pokerlingo-advanced-training`. PR https://github.com/guangnn-161/Pokerlingo/pull/3. Use this chat's `work/pokerlingo` checkout; do not alter the dirty original D:\Pokerlingo.
+COMPLETE: implementation, tests, merge and public-browser verification have passed. PR https://github.com/guangnn-161/Pokerlingo/pull/3 merged into main at `4d8bbfa3d5ac563d533071a813cdf69056ccd9ca`. Production https://pokerlingo-wheat.vercel.app is READY on that merge commit. This is the current continuation pipeline; `redesign-pipeline.md` preserves the earlier redesign checkpoint.
+
+Use this chat's `work/pokerlingo` checkout; do not alter the dirty original D:\Pokerlingo. No required implementation or release work remains for the completed scope. Extend it only from a new user request, keeping small independent commits and updating this file after each meaningful verification.
 
 ## Completed modules and evidence
 
@@ -17,19 +19,31 @@ Implementation complete; final build, CI, preview and public deployment checks r
 ## Validation and release gate
 
 - PASS: 76 tests (34 math + 42 web), workspace typecheck, diff whitespace review. Project lint is TypeScript, not a separate ESLint suite. Coverage percentage not measured.
-- PASS: fresh production build after six-max addition. A CSS compatibility warning was corrected to flex-end; CI will rebuild the final revision.
-- TODO: push current work, update PR description, verify latest CI and Vercel preview on the exact new head; merge without bypassing failures; verify production alias and features in browser.
-- TODO: save screenshots and final release evidence to this chat's `outputs`, update the user-facing pipeline copy and mark the active goal complete only after every requirement is verified.
+- PASS: fresh production build after six-max addition. Final PR head `a00710d860c7eb2afb69e0205d4363770d8bbda3`: GitHub CI run `36622503572` SUCCESS; Vercel preview `dpl_FVk5Fm9gboP9rXAW1kRVmGv1dR5L` READY. A CSS compatibility warning was corrected to flex-end before the final commit.
+- PASS: PR #3 merged with an expected-head check; remote main verified at the merge SHA above. Production deployment `dpl_HmQ79KyNDwg94dvy6odzeKUr3zkK` reports READY, target production, matching merge SHA, and alias `pokerlingo-wheat.vercel.app` without alias errors.
+- PASS: final public-browser checks below and screenshots saved in this chat's `outputs`; active implementation goal completed.
 - No auth/database changes or migrations in this release. Practice only, no payments or wagers. Bot strategies are heuristics, not full-game GTO.
 
 ## Resume procedure
 
-Inspect git status and PR #3 first. Reuse existing checkout. Stop only this checkout's server before rebuilding `.next`. The development server was stopped for final build. Poll the existing build handle if running rather than restarting on timeout. Open a fresh browser tab if the previous session's tab is missing. Use Vercel project `prj_8eilfnM1JHo0sCJVaLEo9KQdgg1t`, team `team_aayAeSDHmNCCuysz1RoENBUG`; production https://pokerlingo-wheat.vercel.app. Do not put temporary preview access tokens into files.
+Read this checkpoint, inspect git status and fetch main before starting a new module. PR #3 is already merged; do not recreate or repeat its release work. Reuse the existing checkout. Local servers have been stopped; no server is required merely to read the checkpoint. Stop only this checkout's server before rebuilding `.next`. Poll an existing build handle if running rather than restarting on timeout. Open a fresh browser tab if the previous session's tab is missing. Use Vercel project `prj_8eilfnM1JHo0sCJVaLEo9KQdgg1t`, team `team_aayAeSDHmNCCuysz1RoENBUG`; production https://pokerlingo-wheat.vercel.app. Do not put temporary preview access tokens into files.
+
+For the next user-requested feature: implement one small module, run the relevant checks, commit, update this Markdown checkpoint, then proceed to the next module. Preserve scope distinctions: the live bot table is six-max Hold'em; the four variants are EV exercises; GTO solves restricted heads-up push/fold. Do not describe it as a full six-max GTO solver.
+
+## Final public verification
+
+- `/practice/poker`: all six seats and five bot styles rendered; cards dealt and player actions enabled. Desktop/mobile full-hand checks already passed locally; latest preview settled a multiway all-in pot of 601 chips. Public screenshot: `outputs/pokerlingo-six-max-public.jpg` in the chat workspace.
+- `/practice/poker/random`: public Hold'em turn spot generated cards, opponent range and price, then graded Fold from calculated equity 5.29%, call 30 BB into a 33 BB pot, call EV -26.67 BB. 2,400 samples; displayed sampling margin about ±0.56 BB. Local checks cover all four variants and exact/sampled modes; latest preview also verified exact Omaha feedback.
+- `/practice/gto`: production worker rendered 169 cells and reached the numerical target.
+- `/practice/counting`: exposed Ts, running -1, true -1.0; both answers graded correct on production.
+- `/practice/blackjack?counting=1`: 3 exposed cards during play, 4 after revealing the dealer hole card, 7 after the next deal; shoe 1 retained across rounds.
+- `/learn/poker-variants` and `/learn/card-counting`: formulas, worked examples, rule/model explanations and source links loaded on production. `/practice/poker/guided` shows 9 curated exercises. `/math` poker and blackjack panels loaded with model explanations.
+- Vercel server-runtime scan across new practice routes reported no errors in the checked one-hour window. This is separate from browser interaction evidence; no claim of live-auth validation.
 
 ## Checkpoint commits
 
 - 7686d32 counting; 9adaf96 variant engine; 3efead9 solver/data; e87c364 advanced UI (old head passed CI and preview).
-- Six-max engine/tests and UI/docs are separate commits following e87c364. Check git log for their final IDs.
+- `b950dbf` six-max engine/tests; `a00710d` six-seat UI/docs. Merge `4d8bbfa` publishes all modules on main.
 
 ## Primary references
 
