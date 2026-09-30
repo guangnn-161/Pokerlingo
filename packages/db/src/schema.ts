@@ -37,12 +37,6 @@ export const auditLogs = pgTable("audit_logs", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
 }, (table) => [index("audit_logs_user_created_idx").on(table.userId, table.createdAt)]);
 export const usersRelations = relations(users, ({ one, many }) => ({
-  profile: one(profiles), accounts: many(accounts), sessions: many(sessions), auditLogs: many(auditLogs)
-}));
-export const profilesRelations = relations(profiles, ({ one }) => ({
-  user: one(users, { fields: [profiles.userId], references: [users.id] })
-}));
-export const usersRelations = relations(users, ({ one, many }) => ({
   profile: one(profiles), accounts: many(accounts), sessions: many(sessions), auditLogs: many(auditLogs),
   attempts: many(attempts), dailyPuzzleAttempts: many(dailyPuzzleAttempts), userQuests: many(userQuests),
   xpLedger: many(xpLedger), masteryScores: many(masteryScores),
