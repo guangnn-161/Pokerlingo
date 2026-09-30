@@ -1,5 +1,5 @@
-import { PokerTrainer } from "./poker-trainer";
+import { BotTable } from "./bot-table";
 export const metadata = { title: "Poker table · Pokerlingo" };
 export default function PokerPage() {
-  return <PokerTrainer />;
+  return <BotTable />;
 }

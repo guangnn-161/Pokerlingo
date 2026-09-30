@@ -76,7 +76,13 @@ export default async function LessonPage({
           <h3>Put it into practice</h3>
           <Link
             href={
-              l.game === "Blackjack" ? "/practice/blackjack" : "/practice/poker"
+              l.id === "card-counting"
+                ? "/practice/counting"
+                : l.id === "push-fold-gto"
+                  ? "/practice/gto"
+                  : l.game === "Blackjack"
+                    ? "/practice/blackjack"
+                    : "/practice/poker"
             }
           >
             Take a seat at the table ↗

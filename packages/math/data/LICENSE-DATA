@@ -1,0 +1,15 @@
+DATA LICENSE — CC BY 4.0
+
+The datasets in the `matrix/` and `pushfold/` directories are licensed under
+the Creative Commons Attribution 4.0 International license (CC BY 4.0).
+
+Full legal text: https://creativecommons.org/licenses/by/4.0/legalcode
+
+You are free to share and adapt the data for any purpose, provided you give
+attribution, e.g.:
+
+    Data source: HoldemMath — https://holdemmath.com/
+
+A link back to https://holdemmath.com/ satisfies the attribution requirement.
+
+SPDX-License-Identifier: CC-BY-4.0

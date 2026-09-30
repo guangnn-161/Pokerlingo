@@ -24,6 +24,204 @@ const rules = {
 };
 export const lessons: Lesson[] = [
   {
+    id: "push-fold-gto",
+    game: "Poker",
+    title: "Read a GTO table without losing the context",
+    subtitle:
+      "A heads-up equilibrium is a strategy for a precisely defined game.",
+    minutes: 7,
+    formula: "Nash gap = best-response gain for SB + best-response gain for BB",
+    sections: [
+      {
+        title: "Start with the action tree",
+        paragraphs: [
+          "In our heads-up push/fold game, the small blind chooses all-in or fold. Facing all-in, the big blind chooses call or fold. There are no limps, smaller raises or postflop decisions. The blinds are 0.5 and 1 BB, no ante and no rake; effective stack includes those posted blinds.",
+          "The table is a solution to that restricted game. The 20 BB setting does not claim that open-shoving is the best first action in unrestricted poker: a fuller game offers other actions.",
+        ],
+      },
+      {
+        title: "Read frequencies and EV separately",
+        paragraphs: [
+          "The 13×13 table groups 1,326 hands into 169 classes. Pairs have six physical combinations, suited classes four, and offsuit classes twelve. A 50% frequency says to choose the action half the time across instances, not that your equity is 50%.",
+          "EV in the selected-hand panel is relative to folding at this decision. It compares the aggressive action against the calculated opposing range, accounting for blockers. Mixed strategies can arise when actions have essentially equal value. Avoid treating rounded percentages as exact prescriptions.",
+        ],
+      },
+      {
+        title: "How this solver is checked",
+        paragraphs: [
+          "Both players repeatedly update their strategies using action regrets. The app averages the strategies and independently asks how much each player could gain by choosing a best response against the other player’s fixed strategy. The sum of those gains is the Nash gap.",
+          "A small gap supports convergence within the payoff model. Our payoff matrix is sampled, not an exhaustive enumeration of every runout. Numerical convergence and input accuracy are separate: more solver iterations cannot repair sampling error in the equities.",
+        ],
+      },
+      {
+        title: "Use it as a learning reference",
+        paragraphs: [
+          "Choose a stack, calculate, then compare the small-blind and big-blind tables. Click strong and weak hands and look at EV against folding. Notice how posting a big blind changes the price of a call. Compare several stacks instead of memorizing one chart as universal.",
+          "Random postflop drills use explicit twelve-hand teaching ranges and their own EV calculation. They do not use this preflop equilibrium as an answer key. A model can be internally correct and still be the wrong model for an actual opponent or betting structure.",
+        ],
+      },
+    ],
+    example: {
+      title: "A 5 BB shove facing the big blind",
+      text: "Both players started with 5 BB. The big blind already posted 1 BB, so calling costs 4 more. With no ante or rake the final pot is 10 BB. If equity against the shove range is 45%, call EV relative to folding is 0.45 × 10 − 4 = +0.5 BB.",
+    },
+    quiz: {
+      question:
+        "The table gives A5s a 40% shove frequency. What does that percentage mean?",
+      options: [
+        "A5s wins 40% of showdowns",
+        "Shove in about 40% of those situations under this model",
+        "40% of the pot belongs to A5s",
+      ],
+      correct: 1,
+      why: "It is an action frequency. Showdown equity and EV are different quantities.",
+    },
+    sources: [
+      {
+        label: "HoldemResources · Heads-up push/fold model",
+        url: "https://www.holdemresources.net/hune",
+      },
+      {
+        label: "Zinkevich et al. · Counterfactual regret minimization",
+        url: "https://proceedings.neurips.cc/paper/2007/file/08d98638c6fcd194a4b1e6992063e944-Paper.pdf",
+      },
+      {
+        label: "HoldemMath · Equity dataset (CC BY 4.0)",
+        url: "https://github.com/Julian-cloud-max/holdemmath-data",
+      },
+    ],
+  },
+  {
+    id: "poker-variants",
+    game: "Poker",
+    title: "Four games, different ways to make a hand",
+    subtitle:
+      "Hold’em, Omaha, Short Deck and Seven-card Stud in the random trainer.",
+    minutes: 9,
+    formula: "Call EV = equity × final pot − additional call",
+    sections: [
+      {
+        title: "Texas Hold’em",
+        paragraphs: [
+          "You receive two private cards and share a five-card board. Make the best five-card hand from all seven; you may use both, one or neither hole card. A strong board can cause a split pot even when the private cards look different.",
+          "Our random drills cover flop, turn and river decisions facing an all-in. The twelve displayed opponent combinations form an explicit equally weighted range. Future board cards are sampled without replacement.",
+        ],
+      },
+      {
+        title: "Omaha",
+        paragraphs: [
+          "Four private cards give you more combinations, but you must use exactly two of them and exactly three board cards. Four hearts in your hand do not make a flush with just one heart on the board. A royal-flush board is not automatically your royal flush.",
+          "The evaluator checks every legal two-plus-three combination. The drill begins after an opponent’s final all-in; it does not simulate a pot-limit raise tree or label its ranges as optimal PLO strategy.",
+        ],
+      },
+      {
+        title: "Short Deck (6+)",
+        paragraphs: [
+          "Remove ranks 2–5, leaving 36 cards. This trainer follows the PokerStars 6+ ranking convention: flush beats full house, straight beats three of a kind, and A–6–7–8–9 is the lowest straight. Other rooms can use different rankings.",
+          "The smaller deck changes runout probabilities. The calculator draws only from the 36-card deck and uses these rankings for both players; it does not reuse standard Hold’em equity figures.",
+        ],
+      },
+      {
+        title: "Seven-card Stud",
+        paragraphs: [
+          "Each player builds an individual seven-card hand; there is no shared board. In the standard deal, the first two cards and the seventh card are private, with four upcards in between. Your best five of seven determine showdown strength.",
+          "Our fifth-, sixth- and seventh-street exercises show the opponent’s known upcards. Every combination in the opponent range contains those same upcards. Each player receives their own remaining cards without replacement. The scenario fixes the opponent’s final all-in at two units, so there is no later betting.",
+        ],
+      },
+      {
+        title: "Use the model you can actually see",
+        paragraphs: [
+          "Each new spot draws new cards, a price and an opponent distribution. The engine then computes equity and compares call EV with folding. It never chooses a preferred answer before generating the hand. A wide range and a made-hand-heavy range can make the same hand play differently.",
+          "River and seventh-street answers enumerate the displayed range exactly. Earlier streets use seeded Monte Carlo. When the EV difference is smaller than sampling uncertainty, the trainer marks the spot too close to grade and excludes it from accuracy. These ranges are teaching assumptions, not predictions about a particular player.",
+        ],
+      },
+    ],
+    example: {
+      title: "The same price, different equity",
+      text: "A pot of 24 units includes the opponent’s bet; calling costs 8. At 20% equity, call EV is 0.20 × 32 − 8 = −1.6. At 35% equity, it is +3.2. Which equity applies depends on the actual cards, the variant’s rules and the opponent range.",
+    },
+    quiz: {
+      question:
+        "In Omaha, the board contains five spades and you hold only one spade. Can you use the board’s flush?",
+      options: [
+        "Yes, any five cards count",
+        "No, you must use exactly two hole cards",
+        "Only if your spade is an ace",
+      ],
+      correct: 1,
+      why: "Exactly two hole cards are required. With only one spade in your hand you cannot make a spade flush.",
+    },
+    sources: [
+      {
+        label: "PokerStars · Omaha rules",
+        url: "https://www.pokerstars.com/poker/games/omaha/",
+      },
+      {
+        label: "PokerStars · 6+ rules",
+        url: "https://www.pokerstars.com/poker/games/six-plus/",
+      },
+      {
+        label: "PokerStars · Stud rules",
+        url: "https://www.pokerstars.com/poker/games/stud/",
+      },
+    ],
+  },
+  {
+    id: "card-counting",
+    game: "Blackjack",
+    title: "Track the shoe, not a lucky streak",
+    subtitle: "Learn Hi-Lo with running-count and true-count exercises.",
+    minutes: 8,
+    formula: "True count = running count ÷ unseen decks",
+    sections: [
+      {
+        title: "Recognize three groups",
+        paragraphs: [
+          "Hi-Lo assigns +1 to ranks 2 through 6, zero to 7 through 9, and −1 to tens, face cards and aces. Start at zero after a shuffle. Add each exposed card once, including other hands and the dealer’s cards when revealed.",
+          "A complete deck has twenty positive tags and twenty negative tags, so its total is zero. Cancel a low card against a high card mentally. Never count a face-down card as if you knew its rank.",
+        ],
+      },
+      {
+        title: "Normalize the count",
+        paragraphs: [
+          "A running count describes the exposed cards. A positive count means low cards have been removed disproportionately. Divide by decks still unseen to express concentration. Running +6 with 3 decks unseen gives true +2; the same running +6 with 1.5 decks unseen gives +4.",
+          "This trainer uses exact unseen-card totals divided by 52, including a hidden dealer hole card, and grades true count to one decimal. Real-table deck estimation is a separate skill. Integer conversion methods differ across index systems: do not mix rounding conventions.",
+        ],
+      },
+      {
+        title: "A practice routine",
+        paragraphs: [
+          "Begin with single-card batches at a slow pace. Pause after several cards, hide the current cards, enter both counts and check the explanation. Move to three-card batches after you stop making tag errors. Review the exposed-card history to find the first missed sign.",
+          "Next use Count a live shoe at the blackjack table. The shoe survives between rounds and shuffles at the 75% cut card. Keep tracking while making normal play decisions. A split moves the original cards; it does not expose those cards a second time. The table reveals the dealer hand when a round ends.",
+        ],
+      },
+      {
+        title: "Separate counting from decisions",
+        paragraphs: [
+          "The count summarizes composition, not the next card. It neither guarantees a win nor specifies an exact advantage by itself. Rules, penetration, decisions and bet sizes all affect return and variance. This exercise uses fixed practice bets and grades count arithmetic separately from basic strategy.",
+          "Our basic-strategy coach does not apply count-based index deviations. A fresh independent shuffle destroys information from the previous shoe. Switch to live-shoe mode when practicing retention across hands; the ordinary table deliberately starts a fresh shoe each round.",
+        ],
+      },
+    ],
+    example: {
+      title: "Six exposed cards",
+      text: "Start at 0. The sequence 4♠, K♦, 7♣, 2♥, A♠, 6♦ gives +1, 0, 0, +1, 0, +1. Running count is +1. If 2.5 decks remain unseen, true count is +0.4. A card already on the table never changes the count simply because you look at it again.",
+    },
+    quiz: {
+      question:
+        "Running count −6 with 2.5 unseen decks: what is the true count to one decimal?",
+      options: ["−2.4", "−15.0", "+2.4"],
+      correct: 0,
+      why: "Divide −6 by 2.5. Keep the negative sign; do not multiply by the remaining decks.",
+    },
+    sources: [
+      {
+        label: "Wizard of Odds · Hi-Lo method",
+        url: "https://wizardofodds.com/games/blackjack/card-counting/high-low/",
+      },
+    ],
+  },
+  {
     id: "pot-odds",
     game: "Poker",
     title: "What is a call really worth?",

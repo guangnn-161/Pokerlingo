@@ -47,13 +47,13 @@ export default function Home() {
           <div className="game-card-copy">
             <h2>Read the table.</h2>
             <p>
-              Position, pot odds and the next right move.
+              Hold’em, Omaha, Short Deck and Stud.
               <br />
-              Practice decisions from preflop to river.
+              Six-max bots, random EV drills and guided examples.
             </p>
             <div className="game-tags">
-              <span>6-max situations</span>
-              <span>Instant explanations</span>
+              <span>4 poker variants</span>
+              <span>Equity-powered coaching</span>
             </div>
             <Link className="button primary" href="/practice/poker">
               Enter poker table <span>↗</span>
@@ -87,7 +87,7 @@ export default function Home() {
             </p>
             <div className="game-tags">
               <span>Configurable rules</span>
-              <span>Practice chips</span>
+              <span>Hi-Lo counting drills</span>
             </div>
             <Link className="button light" href="/practice/blackjack">
               Enter blackjack table <span>↗</span>
@@ -96,6 +96,26 @@ export default function Home() {
         </article>
       </div>
       <ProgressStrip />
+      <div className="learning-teasers">
+        <Link href="/practice/gto" className="lesson-teaser">
+          <span className="lesson-symbol">▦</span>
+          <div>
+            <span className="eyebrow">POKER · GTO LAB</span>
+            <h3>Explore push/fold strategy.</h3>
+            <p>Calculated frequencies for 169 starting hands.</p>
+          </div>
+          <span>↗</span>
+        </Link>
+        <Link href="/practice/counting" className="lesson-teaser">
+          <span className="lesson-symbol">±</span>
+          <div>
+            <span className="eyebrow">BLACKJACK · CARD COUNTING</span>
+            <h3>Keep count. Check your reasoning.</h3>
+            <p>Flash drills, true counts and a continuous shoe.</p>
+          </div>
+          <span>↗</span>
+        </Link>
+      </div>
       <div className="section-heading">
         <h2>Understand the why</h2>
         <Link className="text-link" href="/learn">
