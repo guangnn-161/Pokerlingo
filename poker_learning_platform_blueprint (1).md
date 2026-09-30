@@ -2,18 +2,49 @@
 
 > Phiên bản 2 — mở rộng từ NLHE trainer thành nền tảng học **decision-making under uncertainty** cho poker và blackjack. Tài liệu này lấy *The Theory of Poker* của David Sklansky làm trục tư duy; cuốn sách bàn về các ý tưởng áp dụng cho nhiều biến thể, gồm draw, stud, hold'em, lowball và razz, chứ không chỉ NLHE. [Thông tin xuất bản/tóm tắt phạm vi](https://books.google.com/books/about/The_Theory_of_Poker.html?id=7HJtinI6u6sC)
 
-## 0. Trạng thái triển khai hiện tại — cập nhật 24/09/2026
+## 0. Trạng thái triển khai hiện tại — cập nhật 30/09/2026
 
-Tài liệu này vừa là product blueprint vừa là hợp đồng làm việc. Các đoạn bên dưới mô tả **mục tiêu**; bảng này phản ánh baseline ở commit `2ba317c` cộng với phần B Math v1 được bàn giao trong branch hiện tại.
+Tài liệu này vừa là product blueprint vừa là hợp đồng làm việc. Bảng dưới đây và mục 0.1 là checkpoint hiện tại để tiếp tục khi đổi chat hoặc hết context; các thiết kế/sprint bên dưới vẫn là **mục tiêu**, không mặc nhiên đã triển khai. Đợt redesign và advanced training đã hoàn tất, merge [PR #3](https://github.com/guangnn-161/Pokerlingo/pull/3) vào `main` tại `4d8bbfa3d5ac563d533071a813cdf69056ccd9ca` và public tại [Pokerlingo](https://pokerlingo-wheat.vercel.app). Checkpoint tài liệu tiếp theo là `364ce78`; bản này cập nhật đúng blueprint gốc.
 
 | Khu vực | Trạng thái thực tế | Ghi chú bàn giao |
 |---|---|---|
-| A — Platform | Đã có monorepo pnpm, Next.js/Vercel, Neon PostgreSQL, Drizzle, GitHub OAuth, profile API, health check và rate limit | Production đang chạy. Preview dùng biến `DATABASE_URL_PREVIEW`; migration vẫn chỉ do A chạy. |
-| B — Math | Đã có package `@pokerlingo/math` v1 và `POST /api/math/calculate` | Có Hold'em evaluator/equity heads-up, range/blocker, poker EV/rake, Blackjack infinite-deck EV, casino payout/roulette/sportsbook và fixed-seed risk simulation; chưa có multiway equity, solver hay finite-shoe Blackjack. |
-| C — Learning | Đã có contract Zod + fixture API **demo** | Có scenario/attempt/dashboard mock; chưa có persistence, admin publish, XP ledger, daily scheduler hoặc scoring thật. |
-| D — Product/social | Đã có English drill-first `/demo` vertical slice | Happy path demo: view a 6-max hand → choose action → see immediate EV/why feedback → replay → study pot odds/range → quick-check → fixture XP/quest/leaderboard. Chưa có persistence, multi-scenario engine, shared design system, social mutation hoặc privacy enforcement. |
+| A — Platform | Monorepo pnpm, Next.js/Vercel, Neon PostgreSQL, Drizzle, GitHub OAuth, profile API, health check và rate limit hiện hữu; web đã public | Đợt này không đổi auth/schema hoặc chạy migration. Không tuyên bố đã kiểm tra live auth/DB end-to-end. |
+| B — Math | Engine v1/API hiện hữu; thêm equity cho Hold'em, Omaha, Short Deck, Stud và solver heads-up push/fold | EV drill tính từ cards/range/price sinh lúc chạy; 2,400 samples trước street cuối, enumerate range ở street cuối. GTO 169 nhóm bài có numerical best-response audit. Chưa có full-game/multiway solver hoặc Blackjack finite-shoe EV solver. |
+| C — Learning | 9 ví dụ poker hướng dẫn; lesson/quiz, tiến độ browser-local; guide Hi-Lo, bốn biến thể và GTO | Các API demo vẫn là fixture. Chưa có user-scoped attempt persistence, admin publish, XP ledger, daily scheduler, mastery thích nghi hoặc leaderboard thật. |
+| D — Product/social | Giao diện tiếng Anh với lobby, thư viện, Math Lab, bàn Hold'em six-max đấu 5 bot và bàn Blackjack chơi trọn round | Có random EV drill cho 4 biến thể, GTO lab, Hi-Lo flash/live-shoe mode, desktop/mobile QA. Chưa có multiplayer/friends/social mutation hoặc đồng bộ tiến độ tài khoản. |
 
-**Quy tắc đọc tài liệu:** không coi mock data, score hay leaderboard demo là dữ liệu sản phẩm. Khi thay demo bằng production code, giữ DTO tại `@pokerlingo/contracts/demo` hoặc thực hiện thay đổi có version/changelog.
+**Quy tắc đọc tài liệu:** không coi mock data, score hay leaderboard demo là dữ liệu sản phẩm. Accuracy hiện tại là phản hồi luyện tập theo mô hình hiển thị, không phải XP/ranking được xác thực server-side. Khi thay API demo bằng production code, giữ DTO tại `@pokerlingo/contracts/demo` hoặc thực hiện thay đổi có version/changelog.
+
+### 0.1. Pipeline tiếp tục và các chặng độc lập
+
+**Đã hoàn tất phạm vi người dùng yêu cầu:** Hi-Lo + hướng dẫn, EV ngẫu nhiên, 4 biến thể, GTO hẹp, bàn 6 người với 5 phong cách bot, merge main và public. Không còn bước triển khai bắt buộc của đợt này.
+
+| Chặng | Trạng thái / sản phẩm | Mốc kiểm tra |
+|---|---|---|
+| Sảnh, kiến thức, Math Lab | Xong: navigation/design system, lesson/quiz, toán poker và Blackjack | Public library, guide và hai panel Math Lab đã mở; tiến độ học browser-local |
+| Hi-Lo | Xong: `/practice/counting`, `/practice/blackjack?counting=1`, `/learn/card-counting` | 5 tests; flash RC/TC đúng; shoe 1 giữ qua ván với 3 → 4 → 7 lá exposed, không tính hole card trước khi lật |
+| EV cho 4 biến thể | Xong: `/practice/poker/random`; cards, range, price mới và seed tái lập | 12 tests; browser đã kiểm tra cả 4; production Hold'em turn equity 5.29%, call 30 vào pot 33, EV(call) -26.67 BB |
+| GTO hẹp | Xong: `/practice/gto`, ma trận 169 nhóm, tần suất SB/BB, action EV và numerical gap | 7 solver tests; production worker render đủ 169 nhóm và đạt numerical target |
+| Bàn six-max đấu bot | Xong: `/practice/poker`; Atlas, Nova, Moss, Iris, Blaze với 5 phong cách | 13 tests gồm 50 hand liên tiếp, chip conservation, side pots, reopening và hidden information; desktop/mobile full-hand QA |
+| Ví dụ biên soạn | Xong: `/practice/poker/guided` và `/demo` mở trainer này | 9 spot theo preflop/pot odds/river, giải thích và teaching assumptions |
+| Phát hành | Xong: PR #3 merge, production READY và public-browser checks | 76/76 tests (34 math + 42 web), typecheck, lint command, production build; CI run `36622503572` SUCCESS |
+
+**Bằng chứng release:** final PR head `a00710d860c7eb2afb69e0205d4363770d8bbda3`; preview `dpl_FVk5Fm9gboP9rXAW1kRVmGv1dR5L` READY; production `dpl_HmQ79KyNDwg94dvy6odzeKUr3zkK` READY trên merge SHA `4d8bbfa`, alias `pokerlingo-wheat.vercel.app`. Các mã này là mốc release đã kiểm chứng, không có nghĩa luôn là deployment mới nhất sau commit tài liệu. Project lint hiện chạy TypeScript; chưa đo coverage %. Server-runtime scan trong cửa sổ 1 giờ của các route mới không ghi nhận lỗi, tách biệt với bằng chứng browser.
+
+**Giới hạn cần giữ khi tiếp tục:** bàn bot chơi six-max Hold'em, bot heuristic chỉ thấy own cards + public state; không phải bot GTO. EV drill có 6-seat context nhưng 4 người đã fold, chỉ còn một range đối thủ 12 combo có trọng số bằng nhau; không phải multiway equity. GTO giải heads-up shove/fold–call/fold với blinds 0.5/1, chip EV, không ante/rake/ICM; input equity là sampled data có attribution. Blackjack live shoe 6 decks giữ qua ván, cắt ở 75%; coach vẫn basic strategy, chưa áp dụng count-index deviations. Math Lab Blackjack là infinite-deck EV, khác finite-shoe gameplay. Stacks bot reset khi reload.
+
+**Cách tiếp tục khi đổi chat/context:**
+
+1. Đọc mục 0/0.1 này trước, sau đó [pipeline chi tiết](docs/advanced-training-pipeline.md). Pipeline [redesign](docs/redesign-pipeline.md) là lịch sử đợt đầu.
+2. Kiểm tra git status, fetch main, đọc yêu cầu mới; không lặp lại release PR #3 đã xong. Reuse checkout của chat; giữ nguyên thay đổi riêng trong `D:\Pokerlingo`, không reset/clean/ghi đè.
+3. Chia yêu cầu mới thành từng module có điểm dừng độc lập: triển khai → kiểm tra phù hợp → commit → cập nhật checkpoint ngay trong blueprint này. Ghi rõ xong/đang làm/chặn, evidence và bước kế tiếp trước khi chuyển module.
+4. Dùng branch/PR, kiểm tra CI trên đúng head trước merge; không chạy lại toàn bộ QA chỉ cho sửa Markdown. Không đổi contract/migration nếu feature không cần. Không đưa secrets hay temporary preview tokens vào tài liệu.
+
+**Bản đồ mã để nối việc:** `apps/web/lib/poker-game.ts` (six-max), `card-counting.ts` (Hi-Lo), `blackjack-game.ts` (round/shoe); `packages/math/src/variants.ts`, `push-fold.ts`; UI `apps/web/app/practice/poker/{bot-table.tsx,random-trainer.tsx,equity.worker.ts}`, `practice/gto/{gto-trainer.tsx,solver.worker.ts}`, `practice/counting/counting-trainer.tsx`; lessons ở `apps/web/lib/lessons.ts`.
+
+**Các commit nhỏ đã bàn giao:** `7686d32` Hi-Lo → `9adaf96` variants → `3efead9` solver/data → `e87c364` UI/lessons → `b950dbf` six-max engine/tests → `a00710d` six-seat UI → merge `4d8bbfa`.
+
+**Roadmap còn lại, chỉ mở khi có yêu cầu mới:** persistence/scoring/XP server-side và content publish; adaptive mastery/dashboard; friends/leaderboard có privacy; thêm solver/game tree hoặc finite-shoe Blackjack EV. Đây là công việc tương lai của blueprint, không phải phần dang dở của đợt release này.
 
 ## 1. Mục tiêu sản phẩm
 
@@ -59,7 +90,7 @@ Người học có thể:
 
 - Không tự viết solver GTO hoàn chỉnh cho postflop; chi phí tính toán và độ phức tạp rất lớn.
 - Không có real-time hand assistance, screen scraping hay kết nối poker client.
-- Không làm đa biến thể poker, tournament ICM phức tạp, multiway solver.
+- Bốn biến thể Hold'em, Omaha, Short Deck và Stud đã có EV drill; live bot table hiện chỉ Hold'em. Full betting engine cho các biến thể còn lại, tournament ICM và multiway solver vẫn ngoài phạm vi đã triển khai.
 - Không hứa hẹn “GTO tuyệt đối” nếu dữ liệu chỉ là approximation/chart tham chiếu.
 - Không đưa ra “blackjack winning system”; house edge và EV phải được trình bày trung thực theo ruleset/số deck.
 
@@ -237,6 +268,8 @@ Rubric nên giải thích: action đúng, EV chênh lệch theo unit, rules khi�
 
 GTO không phải một nút “tính GTO”. Với NLHE postflop, equilibrium phụ thuộc stack, positions, bet-size tree, rake, board và abstraction.
 
+**Đã triển khai 30/09/2026:** narrow solver heads-up push/fold tại `/practice/gto`, 169 nhóm bài, SB shove/fold và BB call/fold, frequencies/action EV và numerical best-response gap. Không có postflop tree, open/call/3-bet chart six-max, rake hay ICM. Input equity sampled từ dữ liệu có license/attribution; convergence của solver không loại bỏ sai số input. Các giai đoạn sau là hướng mở rộng, không phải tính năng đã hoàn thành.
+
 ### Giai đoạn 1 — Reference strategy
 
 - Nhập preflop charts đã kiểm chứng hoặc tự xây chart có assumptions rõ.
@@ -309,12 +342,12 @@ Ma trận 169 hand classes, click/drag để chọn, slider weight, notation par
 
 | Variant | Khác biệt luật / engine | Khi triển khai |
 |---|---|---|
-| NLHE | 2 hole cards, dùng 0–2 hole cards + board | MVP |
+| NLHE | 2 hole cards, dùng 0–2 hole cards + board | Đã có EV drill và full-hand six-max bot table |
 | Limit Hold'em | bet size/cap cố định | sau NLHE core |
-| Pot-Limit Omaha (PLO) | 4 hole cards, **bắt buộc dùng đúng 2** | phase 2; combo engine mới |
+| Pot-Limit Omaha (PLO) | 4 hole cards, **bắt buộc dùng đúng 2** | Đã có Omaha all-in EV drill/evaluator; chưa có pot-limit betting engine |
 | Omaha Hi-Lo | high/low split, qualifying low | phase 3 |
-| Short Deck | deck 36 lá, thứ tự hand/rule draw thay đổi | phase 3 |
-| Seven-Card Stud | upcards, dead cards, bring-in | phase 3 |
+| Short Deck | 36 lá; flush > full house, straight > trips; A6789 thấp nhất | Đã có EV drill/evaluator theo ruleset này; chưa có full-hand bot table |
+| Seven-Card Stud | Mỗi người 7 lá riêng, upcards công khai, best 5/7 | Đã có EV drill street 5/6/7 với upcards nhất quán; bring-in/full betting còn roadmap |
 | Razz | low-hand ranking, exposed cards | phase 3 |
 | 5-Card Draw / 2-7 Triple Draw | draw actions, discard, hand ranking riêng | phase 4 |
 
@@ -506,7 +539,7 @@ docs/                     # assumptions, content authoring guide
 
 ## 19. Thứ tự ưu tiên thực tế
 
-Làm theo thứ tự này:
+Thứ tự dưới đây là đề xuất trước đợt redesign/advanced training. Curriculum, EV Lab, Blackjack trainer và EV drill bốn biến thể đã có; nội dung 100 scenario, adaptive dashboard, persistence và solver import vẫn là roadmap. Tiếp tục theo yêu cầu mới và checkpoint mục 0.1, không coi danh sách này là việc chưa làm toàn bộ:
 
 1. **Core curriculum từ The Theory of Poker** + preflop drills + explanation chất lượng.
 2. **EV Lab** cho pot odds, equity và fold equity.
@@ -973,7 +1006,7 @@ Quy ước bắt buộc:
 
 **Mục tiêu:** poker, blackjack và casino math là pure, testable packages; web không chứa công thức.
 
-**Trạng thái hiện tại:** `packages/math` giữ nguyên các hàm demo cho C/D và có engine v1 cho parser/evaluator/equity Hold'em heads-up, range/blocker, poker EV/rake, Blackjack infinite-deck EV, payout-table/roulette/sportsbook math và seeded risk simulation. `POST /api/math/calculate` validate request và trả assumptions, method, ruleset, warnings cùng engine version. Golden vectors ở `packages/math/src/test-vectors/v1.json`; chi tiết/giới hạn ở `docs/math-engine.md`.
+**Trạng thái hiện tại 30/09/2026:** `packages/math` giữ nguyên engine v1/API và thêm `variants.ts` (Hold'em/Omaha/Short Deck/Stud) cùng `push-fold.ts` (narrow HU solver). `POST /api/math/calculate` vẫn validate request và trả assumptions, method, ruleset, warnings cùng engine version; random EV và GTO mới chạy bằng Web Workers với pure math modules. Golden vectors v1 ở `packages/math/src/test-vectors/v1.json`; model/giới hạn hiện tại ở mục 0.1 và `docs/advanced-training-pipeline.md`.
 
 | Hạng mục | Deliverable |
 |---|---|
@@ -983,7 +1016,7 @@ Quy ước bắt buộc:
 | API | validate input → calculate → trả assumptions, method, engineVersion |
 | Quality | golden test vectors, fixed-seed simulation, benchmarks |
 
-**Việc tiếp theo của B:** finite-shoe Blackjack, resplit rules, multiway equity, performance benchmark/cache và solver integration. Không thay đổi DTO demo đang được C/D tiêu thụ nếu chưa có changelog/migration path.
+**Roadmap của B, chưa mở trong đợt này:** finite-shoe Blackjack EV, resplit rules, multiway equity, performance benchmark/cache và external solver import/full betting trees. Narrow HU push/fold solver đã xong; finite-shoe gameplay/Hi-Lo đã có nhưng không đồng nghĩa finite-shoe EV solver. Không thay đổi DTO demo nếu chưa có changelog/migration path.
 
 **Definition of done:** mỗi engine chạy bằng unit test không cần DB/UI; endpoint trả cùng kết quả với test vector; request invalid/card duplicate bị reject; result luôn kèm ruleset/assumptions.
 
@@ -992,6 +1025,8 @@ Quy ước bắt buộc:
 **Mục tiêu:** biến engine thành lộ trình học, scenario và progression có thể quản trị.
 
 **Trạng thái demo đã bàn giao:** `@pokerlingo/contracts/demo` mô tả Scenario, AttemptResult và Dashboard; `/api/demo/scenario`, `/api/demo/attempt`, `/api/demo/dashboard` trả fixture không cần database. Attempt hiện chỉ chấm `fold/call/raise` của một spot AQs và tuyệt đối không ghi XP/attempt vào DB.
+
+**Learning hiện tại 30/09/2026:** UI luyện thực tế có 9 guided spots, random EV bốn biến thể và lesson/quiz với browser-local progress; guide Hi-Lo, variants và GTO đã public. Những phần này chưa dùng API fixture làm persistence và chưa có XP/quest server-side. Không nhầm giới hạn API demo với số nội dung luyện thực tế.
 
 | Hạng mục | Deliverable |
 |---|---|
@@ -1010,7 +1045,7 @@ Quy ước bắt buộc:
 
 **Mục tiêu:** biến các API thành trải nghiệm mượt, mobile-friendly và có privacy.
 
-**Trạng thái demo đã bàn giao:** `/demo` là client page tiếng Việt gọi đúng ba API fixture, hiển thị bàn poker 6-max với vị trí, stack, pot, Hero cards và opponent cards face-down; sau đó cho phép chọn action và hiển thị result, XP/quest, leaderboard/friends. Home có link vào demo. UI cố ý dùng inline styles để D thay bằng design system; các nút demo không tạo friend request hay dữ liệu người dùng.
+**Trạng thái hiện tại 30/09/2026:** giao diện tiếng Anh đã có shell/design system responsive, lobby, lesson library, Math Lab, Blackjack full round/Hi-Lo, six-max Hold'em bots, random EV và GTO lab. `/demo` hiện render guided `PokerTrainer`, không còn là trang fixture XP/quest/leaderboard. Các API demo còn tồn tại nhưng không phải social sản phẩm. Chưa có friends/multiplayer, privacy enforcement cho social hoặc progress sync tài khoản.
 
 | Hạng mục | Deliverable |
 |---|---|
@@ -1021,13 +1056,13 @@ Quy ước bắt buộc:
 | Leaderboard | daily/weekly/friends boards, season selector, privacy labels |
 | Accessibility | keyboard action controls, color-independent feedback, responsive layout |
 
-**Việc tiếp theo của D:** tách component/design token, thêm responsive layout và loading/error/empty state, sau đó thay mock API bằng client thật. Friend request, block/report và privacy labels chỉ bật khi C/A có mutation server-side tương ứng.
+**Roadmap của D, chưa mở trong đợt này:** UI đồng bộ tiến độ/mastery và social sau khi C/A có persistence, scoring và mutation thật. Design system/core responsive đã có; không lặp lại đợt redesign. Friend request, block/report và privacy labels chỉ bật khi backend tương ứng hoạt động.
 
 **Definition of done:** toàn bộ happy path demo được với mock; component test cho action/empty/error states; integration smoke test cho login → drill → result → quest → leaderboard/friend request; không expose private profile data.
 
 ### 25.7. Kế hoạch 4 tuần và điểm ghép code
 
-Kế hoạch dưới đây là **roadmap sau demo**, không phải bảng trạng thái hoàn thành. Mốc đã đạt là “vertical slice demo không persistence”; chưa đạt vertical slice production vì chưa có user-scoped attempt → scoring thật → XP/quest/database.
+Kế hoạch dưới đây là **roadmap persistence/social**, không phải bảng trạng thái hoàn thành. Web luyện tập hiện đã public với gameplay/calculator thật và tiến độ local, nhưng chưa đạt chuỗi user-scoped attempt → server scoring → XP/quest/database. Core UI/math không còn chỉ là vertical slice fixture; xem mục 0/0.1 trước khi lập chặng tiếp theo.
 
 | Tuần | A — Platform | B — Math | C — Learning | D — UI/social | Mốc ghép |
 |---|---|---|---|---|---|
