@@ -25,9 +25,9 @@ export async function POST(request:Request){
   const [p]=await tx.select().from(dailyPuzzles).where(and(eq(dailyPuzzles.puzzleDate,date),eq(dailyPuzzles.game,parsed.data.game),lte(dailyPuzzles.publishAt,now),gt(dailyPuzzles.closeAt,now))).limit(1);
   if(!p)throw new Error("DAILY_NOT_FOUND");
   const [same]=await tx.select().from(dailyPuzzleAttempts).where(and(eq(dailyPuzzleAttempts.puzzleId,p.id),eq(dailyPuzzleAttempts.userId,user.id),eq(dailyPuzzleAttempts.submissionId,parsed.data.submissionId))).limit(1);
-  if(same)return {p,same:true,row:same};
+  if(same)return {p,same:true,row:same,tag:null};
   const [first]=await tx.select().from(dailyPuzzleAttempts).where(and(eq(dailyPuzzleAttempts.puzzleId,p.id),eq(dailyPuzzleAttempts.userId,user.id),eq(dailyPuzzleAttempts.isFirstAttempt,1))).limit(1);
-  if(first)return {p,same:false,row:first};
+  if(first)return {p,same:false,row:first,tag:null};
   const [r]=await tx.select().from(scenarioRevisions).where(eq(scenarioRevisions.id,p.revisionId)).limit(1);if(!r)throw new Error("REVISION_NOT_FOUND");
   const s=solutionFromRevision(r), selected=s.selectedEvs[parsed.data.action.size?parsed.data.action.type+":"+parsed.data.action.size:parsed.data.action.type];
   const selectedEv=typeof selected==="number"?selected:s.selectedEvs[parsed.data.action.type];if(typeof selectedEv!=="number")throw new Error("ACTION_NOT_SCORABLE");
