@@ -37,6 +37,6 @@ export async function POST(request:Request){
   return {p,same:false,row,tag};
  });
  const [r]=await db.select().from(scenarioRevisions).where(eq(scenarioRevisions.id,result.p.revisionId)).limit(1); if(!r)return NextResponse.json({error:"REVISION_NOT_FOUND"},{status:404});
- const s=solutionFromRevision(r), action=JSON.parse(result.row.selectedActionJson);
- return NextResponse.json({attemptId:result.row.id,puzzleId:result.p.id,isFirstAttempt:result.row.isFirstAttempt===1,selectedAction:action,bestAction:s.bestAction,evLossBb:Number(result.row.evLoss),score:result.row.score,mistakeTag:result.tag ?? null,explanationMd:s.explanationMd,assumptions:s.assumptions,engineVersion:s.engineVersion,calculationMethod:s.calculationMethod});
+ const s=solutionFromRevision(r), action=JSON.parse(result.row.selectedActionJson), returnedMistake=Number(result.row.evLoss)>0?mistakeTagFor(r.topic,action.type):null;
+ return NextResponse.json({attemptId:result.row.id,puzzleId:result.p.id,isFirstAttempt:result.row.isFirstAttempt===1,selectedAction:action,bestAction:s.bestAction,evLossBb:Number(result.row.evLoss),score:result.row.score,mistakeTag:returnedMistake,explanationMd:s.explanationMd,assumptions:s.assumptions,engineVersion:s.engineVersion,calculationMethod:s.calculationMethod});
 }
