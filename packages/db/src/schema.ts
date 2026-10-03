@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { index, integer, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { index, integer, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";\nimport { sql } from "drizzle-orm";
 
 export const roleEnum = pgEnum("role", ["user", "admin"]);
 export const visibilityEnum = pgEnum("profile_visibility", ["private", "friends", "public"]);
@@ -81,7 +81,7 @@ export const dailyPuzzleAttempts = pgTable("daily_puzzle_attempts", {
   createdAt: timestamp("created_at",{withTimezone:true}).notNull().defaultNow(),
 }, (table)=>[
   uniqueIndex("daily_puzzle_submission_unique").on(table.puzzleId,table.userId,table.submissionId),
-  uniqueIndex("daily_puzzle_first_score_unique").on(table.puzzleId,table.userId,table.isFirstAttempt)
+  uniqueIndex("daily_puzzle_first_score_unique").on(table.puzzleId,table.userId).where(sql`${table.isFirstAttempt} = 1`)
 ]);
 
 export const questTemplates = pgTable("quest_templates", {
