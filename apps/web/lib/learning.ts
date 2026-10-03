@@ -70,8 +70,8 @@ export async function submitLearningAttempt(input:{userId:string;revisionId:stri
     const selectedEvBb=typeof selectedEv==="number"?selectedEv:s.selectedEvs[input.action.type];
     if(typeof selectedEvBb!=="number") throw new Error("ACTION_NOT_SCORABLE");
     const loss=Math.max(0,s.referenceEvBb-selectedEvBb), score=calculateScore(loss), mistake=loss>0?mistakeTagFor(rev.topic,input.action.type):null;
-    const [row]=await tx.insert(attempts).values({userId:input.userId,revisionId:rev.id,submissionId:input.submissionId,selectedActionJson:json(input.action),evLossBb:String(loss),score,mistakeTag:mistake,durationMs:input.durationMs??0}).returning();
-    if(!row) throw new Error("ATTEMPT_PERSIST_FAILED");
+    const [row]=await tx.insert(attempts).values({userId:input.userId,revisionId:rev.id,submissionId:input.submissionId,selectedActionJson:json(input.action),evLossBb:String(loss),score,mistakeTag:mistake,durationMs:input.durationMs??0}).onConflictDoNothing({target:[attempts.userId,attempts.submissionId]}).returning();
+    if(!row){ const [winner]=await tx.select().from(attempts).where(and(eq(attempts.userId,input.userId),eq(attempts.submissionId,input.submissionId))).limit(1); if(!winner) throw new Error("ATTEMPT_PERSIST_FAILED"); const [winnerRev]=await tx.select().from(scenarioRevisions).where(eq(scenarioRevisions.id,winner.revisionId)).limit(1); if(!winnerRev) throw new Error("REVISION_NOT_FOUND"); return resultFrom(winner,winnerRev); }
     const [m]=await tx.select().from(masteryScores).where(and(eq(masteryScores.userId,input.userId),eq(masteryScores.topicKey,rev.topic))).limit(1);
     const next=m?Math.round(m.score*.8+score*.2):score;
     await tx.insert(masteryScores).values({userId:input.userId,topicKey:rev.topic,score:next,sampleCount:1}).onConflictDoUpdate({target:[masteryScores.userId,masteryScores.topicKey],set:{score:next,sampleCount:sql`${masteryScores.sampleCount}+1`,updatedAt:new Date()}});
