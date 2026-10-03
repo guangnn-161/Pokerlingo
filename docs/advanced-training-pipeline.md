@@ -54,3 +54,9 @@ For the next user-requested feature: implement one small module, run the relevan
 - https://www.pokertda.com/view-poker-tda-rules/ (full raise and cumulative short-all-in reopening)
 - https://github.com/Julian-cloud-max/holdemmath-data (CC BY 4.0; pinned revision and license in packages/math/data)
 - https://proceedings.neurips.cc/paper/2007/file/08d98638c6fcd194a4b1e6992063e944-Paper.pdf
+
+## Learning Daily remediation (2026-10-03)
+
+Learning Daily is an additive learning pipeline. Deploy the Drizzle migration before application code that references the new revision tables; seed only approved fixtures. Production Vercel builds must not execute migrations. For rollback, deploy a forward-compatible fix and preserve learner records.
+
+The learner API is authenticated and Zod-validated. Scenario GETs expose prompt-only revisions; solution data is returned only after submission. Standard attempts are idempotent by learner/submission ID and transactionally update mastery, quests and XP. Daily puzzle state uses game-scoped canonical UTC periods and a single first-attempt score. CI uses disposable PostgreSQL to validate migration and integration behavior.
