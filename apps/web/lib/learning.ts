@@ -35,7 +35,7 @@ async function ensureQuest(tx:any,userId:string,template:any,now:Date) {
   const [row]=await tx.insert(userQuests).values({userId,templateId:template.id,periodStart:period,progressJson:json({progress:0,target:rules.target??1}),status:"active"}).returning();
   return row;
 }
-async function updateQuests(tx:any,userId:string,args:{score:number;mistakeTag:string|null},now:Date,sourceId:string) {
+export async function updateQuests(tx:any,userId:string,args:{score:number;mistakeTag:string|null},now:Date,sourceId:string) {
   const templates=await tx.select().from(questTemplates).where(eq(questTemplates.active,1));
   for(const template of templates){
     const rules=parseRules(template.rulesJson);
