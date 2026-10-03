@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { and, eq, lte, gt } from "drizzle-orm";
 import { db } from "@pokerlingo/db";
-import { dailyPuzzleAttempts,dailyPuzzles,scenarioRevisions } from "@pokerlingo/db/schema";
+import { dailyPuzzleAttempts,dailyPuzzles,scenarioRevisions,xpLedger } from "@pokerlingo/db/schema";
 import { dailyGetSchema,dailyPostRequestSchema } from "@pokerlingo/contracts/learning";
 import { getCurrentUser } from "@/lib/current-user";
-import { calculateScore,mistakeTagFor,promptFromRevision,solutionFromRevision } from "@/lib/learning";
+import { calculateScore,mistakeTagFor,promptFromRevision,solutionFromRevision,updateQuests } from "@/lib/learning";
 import { utcDateKey } from "@/lib/daily-puzzle";
 export async function GET(request:Request){
  const user=await getCurrentUser(); if(!user)return NextResponse.json({error:"UNAUTHORIZED"},{status:401});
@@ -33,10 +33,10 @@ export async function POST(request:Request){
   const selectedEv=typeof selected==="number"?selected:s.selectedEvs[parsed.data.action.type];if(typeof selectedEv!=="number")throw new Error("ACTION_NOT_SCORABLE");
   const loss=Math.max(0,s.referenceEvBb-selectedEv),score=calculateScore(loss),tag=loss>0?mistakeTagFor(r.topic,parsed.data.action.type):null;
   const [row]=await tx.insert(dailyPuzzleAttempts).values({puzzleId:p.id,userId:user.id,submissionId:parsed.data.submissionId,evLoss:String(loss),score,durationMs:parsed.data.durationMs??0,isFirstAttempt:1,selectedActionJson:JSON.stringify(parsed.data.action)}).returning();
-  await tx.insert(xpLedger).values({userId:user.id,sourceType:"daily",sourceId:row.id,xpDelta:score>=80?10:5,idempotencyKey:"daily:"+row.id}).onConflictDoNothing({target:xpLedger.idempotencyKey});
-  return {p,same:false,row};
+  await tx.insert(xpLedger).values({userId:user.id,sourceType:"daily",sourceId:row.id,xpDelta:score>=80?10:5,idempotencyKey:"daily:"+row.id}).onConflictDoNothing({target:xpLedger.idempotencyKey});\n  await updateQuests(tx,user.id,{score,mistakeTag:tag},now,row.id);
+  return {p,same:false,row,tag};
  });
  const [r]=await db.select().from(scenarioRevisions).where(eq(scenarioRevisions.id,result.p.revisionId)).limit(1); if(!r)return NextResponse.json({error:"REVISION_NOT_FOUND"},{status:404});
  const s=solutionFromRevision(r), action=JSON.parse(result.row.selectedActionJson);
- return NextResponse.json({attemptId:result.row.id,puzzleId:result.p.id,isFirstAttempt:result.row.isFirstAttempt===1,selectedAction:action,bestAction:s.bestAction,evLossBb:Number(result.row.evLoss),score:result.row.score,mistakeTag:null,explanationMd:s.explanationMd,assumptions:s.assumptions,engineVersion:s.engineVersion,calculationMethod:s.calculationMethod});
+ return NextResponse.json({attemptId:result.row.id,puzzleId:result.p.id,isFirstAttempt:result.row.isFirstAttempt===1,selectedAction:action,bestAction:s.bestAction,evLossBb:Number(result.row.evLoss),score:result.row.score,mistakeTag:result.tag ?? null,explanationMd:s.explanationMd,assumptions:s.assumptions,engineVersion:s.engineVersion,calculationMethod:s.calculationMethod});
 }
