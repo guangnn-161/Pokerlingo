@@ -30,7 +30,7 @@ jobs:
       - run: pnpm install --no-frozen-lockfile
       - run: pnpm lint
       - run: pnpm typecheck
-      - run: pnpm db:migrate
+      - run: pnpm db:generate\n      - run: git diff --exit-code -- packages/db/drizzle || (echo 'Drizzle schema/migration metadata is out of date; run pnpm db:generate and commit the generated metadata.' && exit 1)\n      - run: pnpm db:migrate
       - run: pnpm db:seed
       - run: pnpm test
       - run: pnpm build
