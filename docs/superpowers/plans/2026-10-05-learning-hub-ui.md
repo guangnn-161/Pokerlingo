@@ -229,3 +229,24 @@ Verify `/training`, `/training/daily` and `/training/scenarios` redirect when si
 - Interface consistency: every component uses the Task 1 request boundary; no component reaches the database or scoring library.
 - Review Focus coverage: Task 1 covers invalid payloads, Task 2 gate/progress, Task 3 pending/pre-submit state, Task 4 Daily absence/practice response, and Task 5 route-level flow.
 - Scope: authoring, social features, notifications, payments and scoring changes remain excluded.
+
+## Execution record — 2026-10-05
+
+**Status:** Completed and released to `main` in commit `f36760e`.
+
+- Data boundary and view-model tests: `e9f25c1`.
+- Protected dashboard, quest and progress screens: `06ede2b`.
+- Scenario Practice screen: `c490ee5`.
+- Daily Challenge screen: `dec4217`.
+- Lobby/library entry points and learner-route documentation: `ffe9cb1`.
+- Review fixes for Daily reload reveal, game-switch request races and action sizing: `f36760e`.
+
+Validation recorded after the final review fixes:
+
+- `pnpm lint` and `pnpm typecheck` passed.
+- All web tests passed: 57 tests in 7 files.
+- Production web build passed.
+- GitHub Actions passed for `f36760e`: https://github.com/guangnn-161/Pokerlingo/actions/runs/37230513520.
+- The public `/training` route returns `307 /login` without an authenticated session, confirming the release route and server-side gate are active.
+
+The local database migration suite cannot run on this workstation while PostgreSQL is absent at port 5432. The release CI runs that database-backed validation with a disposable PostgreSQL service.
