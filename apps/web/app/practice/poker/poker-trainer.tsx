@@ -1,0 +1,256 @@
+"use client";
+import { useState } from "react";
+import Link from "next/link";
+import { PlayingCard } from "@/components/playing-card";
+import { recordDecision } from "@/components/progress";
+import { pokerDrills, drillCallEv, type PokerAction } from "@/lib/poker-drills";
+const seats = [
+  { p: "UTG", x: 16, y: 12 },
+  { p: "HJ", x: 50, y: 0 },
+  { p: "CO", x: 84, y: 12 },
+  { p: "BTN", x: 84, y: 88 },
+  { p: "SB", x: 50, y: 100 },
+  { p: "BB", x: 16, y: 88 },
+];
+export function PokerTrainer() {
+  const [group, setGroup] = useState("All spots"),
+    [index, setIndex] = useState(0),
+    [choice, setChoice] = useState<PokerAction | null>(null),
+    [replay, setReplay] = useState(false),
+    [score, setScore] = useState({ correct: 0, total: 0 });
+  const drills =
+      group === "All spots"
+        ? pokerDrills
+        : pokerDrills.filter((d) => d.group === group),
+    d = drills[index % drills.length]!;
+  const correct = choice === d.best,
+    ev = drillCallEv(d);
+  function choose(action: PokerAction) {
+    if (choice) return;
+    setChoice(action);
+    if (!replay) {
+      recordDecision("poker", action === d.best);
+      setScore((s) => ({
+        correct: s.correct + Number(action === d.best),
+        total: s.total + 1,
+      }));
+    }
+  }
+  return (
+    <>
+      <div className="page-heading">
+        <div>
+          <p className="eyebrow">POKER / DECISION PRACTICE</p>
+          <h1>
+            Read the spot.
+            <br />
+            <span>Make your move.</span>
+          </h1>
+          <p>
+            Play a decision, then unpack the reasoning. Every spot has an
+            explicit teaching model.
+          </p>
+        </div>
+        <Link className="button secondary" href="/learn?game=poker">
+          Study poker ↗
+        </Link>
+      </div>
+      <div className="tabs" aria-label="Poker drill category">
+        {["All spots", "Preflop", "Pot odds", "River"].map((g) => (
+          <button
+            key={g}
+            className={group === g ? "selected" : ""}
+            aria-pressed={group === g}
+            onClick={() => {
+              setGroup(g);
+              setIndex(0);
+              setChoice(null);
+              setReplay(false);
+            }}
+          >
+            {g}
+          </button>
+        ))}
+      </div>
+      <div className="practice-layout">
+        <div className="table-panel">
+          <div className="table-toolbar">
+            <strong>
+              <i className="status-dot" />
+              TEXAS HOLD’EM · 6-MAX
+            </strong>
+            <span>
+              {d.street} · Spot {(index % drills.length) + 1}/{drills.length}
+            </span>
+          </div>
+          <div className="table-stage">
+            <div className="poker-felt">
+              <div className="table-watermark">POKERLINGO</div>
+              {seats.map((s) => {
+                const hero = s.p === d.position;
+                const villain = s.p === "BB" && d.street !== "Preflop";
+                return (
+                  <div
+                    key={s.p}
+                    className={`seat ${hero ? "hero" : villain ? "" : "folded"}`}
+                    style={{ left: `${s.x}%`, top: `${s.y}%` }}
+                  >
+                    {(hero || villain) && (
+                      <div className="seat-cards">
+                        {hero ? (
+                          d.hero.map((c) => <PlayingCard key={c} card={c} />)
+                        ) : (
+                          <>
+                            <PlayingCard small />
+                            <PlayingCard small />
+                          </>
+                        )}
+                      </div>
+                    )}
+                    <div className="seat-label">
+                      <strong>
+                        {hero ? "YOU" : s.p === "BB" ? "BIG BLIND" : s.p}
+                      </strong>
+                      {hero
+                        ? s.p
+                        : d.street === "Preflop"
+                          ? s.p === "SB"
+                            ? "0.5 BB"
+                            : s.p === "BB"
+                              ? "1 BB"
+                              : "100 BB"
+                          : villain
+                            ? "Opponent"
+                            : "Folded"}
+                    </div>
+                  </div>
+                );
+              })}
+              <div className="poker-board">
+                {d.board.map((c) => (
+                  <PlayingCard key={c} card={c} />
+                ))}
+              </div>
+              <div className="pot-label">
+                POT <strong>{d.pot} BB</strong>
+              </div>
+            </div>
+            <p className="table-caption">{d.context}</p>
+          </div>
+          <div className="decision-bar">
+            <p className="eyebrow">{d.title}</p>
+            <h3>{d.prompt}</h3>
+            {d.equity !== undefined && (
+              <p>
+                Assumed equity: <strong>{(100 * d.equity).toFixed(1)}%</strong>{" "}
+                · Additional call: {d.call} BB
+              </p>
+            )}
+            <div className="actions">
+              {d.options.map((o) => (
+                <button
+                  className={`button ${o.action === "fold" ? "secondary" : "primary"}`}
+                  key={o.action}
+                  disabled={choice !== null}
+                  onClick={() => choose(o.action)}
+                >
+                  {o.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+        <aside className="coach-panel">
+          <section
+            className={`coach-card ${choice ? (correct ? "correct" : "incorrect") : ""}`}
+            aria-live="polite"
+          >
+            <p className="eyebrow">YOUR TABLE COACH</p>
+            <h3>
+              {choice
+                ? correct
+                  ? "That’s the idea."
+                  : "Let’s look at the price."
+                : "The decision comes first."}
+            </h3>
+            {choice ? (
+              <>
+                <p>
+                  <strong>
+                    {d.options.find((o) => o.action === d.best)?.label}
+                  </strong>{" "}
+                  is the teaching answer.
+                </p>
+                <p>{d.why}</p>
+                {ev !== undefined && (
+                  <div className="formula">
+                    Call EV: {ev >= 0 ? "+" : ""}
+                    {ev.toFixed(2)} BB
+                  </div>
+                )}
+                <Link className="text-link" href={`/learn/${d.lesson}`}>
+                  Explore the underlying math ↗
+                </Link>
+                <div className="feedback-actions">
+                  <button
+                    className="button secondary"
+                    onClick={() => {
+                      setChoice(null);
+                      setReplay(true);
+                    }}
+                  >
+                    Replay
+                  </button>
+                  <button
+                    className="button primary"
+                    onClick={() => {
+                      setIndex((i) => (i + 1) % drills.length);
+                      setChoice(null);
+                      setReplay(false);
+                    }}
+                  >
+                    Next spot →
+                  </button>
+                </div>
+                {replay && (
+                  <p className="quiet">
+                    Replay practice does not add to your score.
+                  </p>
+                )}
+              </>
+            ) : (
+              <>
+                <p>
+                  Take a moment to read the position, pot and available
+                  information. Choose an action to see its reasoning.
+                </p>
+                <p>Your answer is graded against the assumptions below.</p>
+              </>
+            )}
+          </section>
+          <section className="coach-card">
+            <p className="eyebrow">THIS SESSION</p>
+            <dl className="fact-list">
+              <dt>Decisions</dt>
+              <dd>{score.total}</dd>
+              <dt>Correct</dt>
+              <dd>{score.correct}</dd>
+              <dt>Accuracy</dt>
+              <dd>
+                {score.total
+                  ? Math.round((score.correct / score.total) * 100) + "%"
+                  : "—"}
+              </dd>
+            </dl>
+            <h3>Know the model</h3>
+            <p>{d.assumption}</p>
+          </section>
+        </aside>
+      </div>
+      <p className="notice">
+        These are curated decision exercises, not a live multiplayer game or a
+        GTO solver. “Correct” means consistent with the stated model.
+      </p>
+    </>
+  );
+}

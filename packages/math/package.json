@@ -1,0 +1,18 @@
+{
+  "name": "@pokerlingo/math",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./api": "./src/api.ts",
+    "./push-fold": "./src/push-fold.ts",
+    "./preflop-data": "./data/preflop-equity.json"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.8"
+  }
+}

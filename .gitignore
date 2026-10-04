@@ -6,3 +6,4 @@ coverage
 !.env.example
 *.tsbuildinfo
 .vercel
+next-env.d.ts

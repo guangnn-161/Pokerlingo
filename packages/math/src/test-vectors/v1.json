@@ -1,0 +1,47 @@
+{
+  "engineVersion": "math-v1.0.0",
+  "potOdds": [
+    { "id": "25-percent-required-equity", "potBeforeCallBb": 15, "callBb": 5, "expected": 0.25 },
+    { "id": "break-even-call-ev", "equity": 0.25, "finalPotBb": 20, "callBb": 5, "expected": 0 }
+  ],
+  "rangeComboCounts": [
+    { "notation": "AA", "expected": 6 },
+    { "notation": "AKs", "expected": 4 },
+    { "notation": "KQo", "expected": 12 },
+    { "notation": "TT+", "expected": 30 },
+    { "notation": "A2s-A5s", "expected": 16 },
+    { "notation": "KJo+", "expected": 24 }
+  ],
+  "fiveCardHands": [
+    { "cards": ["As", "Ks", "Qs", "Js", "Ts"], "category": "straight-flush", "categoryValue": 8, "kickers": [14] },
+    { "cards": ["As", "2d", "3h", "4c", "5s"], "category": "straight", "categoryValue": 4, "kickers": [5] },
+    { "cards": ["Ah", "Ad", "Ac", "Ks", "Kd"], "category": "full-house", "categoryValue": 6, "kickers": [14, 13] }
+  ],
+  "holdemEquity": [
+    { "heroCards": ["As", "Ad"], "villainCards": ["Kc", "Qd"], "board": ["2c", "3d", "4h", "5s", "9c"], "expectedEquity": 1 },
+    { "heroCards": ["2c", "3c"], "villainCards": ["4d", "5d"], "board": ["As", "Ks", "Qs", "Js", "Ts"], "expectedEquity": 0.5 }
+  ],
+  "monteCarlo": {
+    "heroCards": ["As", "Kd"],
+    "villainRange": "QQ+,AKs",
+    "samples": 300,
+    "seed": 4242,
+    "expected": {
+      "equity": 0.305,
+      "winRate": 0.24666666666666667,
+      "tieRate": 0.11666666666666667,
+      "lossRate": 0.6366666666666667,
+      "standardError": 0.02472648596420928
+    }
+  },
+  "roulette": [
+    { "wheel": "european", "expectedHouseEdge": 0.02702702702702703 },
+    { "wheel": "american", "expectedHouseEdge": 0.05263157894736842 }
+  ],
+  "blackjackNatural": {
+    "playerCards": ["As", "Kd"],
+    "dealerUpcard": "6c",
+    "expectedBestEvUnits": 1.5,
+    "expectedDealerNaturalProbability": 0
+  }
+}

@@ -1,6 +1,5 @@
 {
   "framework": "nextjs",
   "installCommand": "pnpm install --no-frozen-lockfile",
-  "buildCommand": "pnpm --filter @pokerlingo/web build",
-  "outputDirectory": "apps/web/.next"
+  "buildCommand": "pnpm --filter @pokerlingo/web build"
 }
