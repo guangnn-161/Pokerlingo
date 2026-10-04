@@ -95,6 +95,15 @@ export default function Home() {
           </div>
         </article>
       </div>
+      <Link href="/training" className="training-entry-banner">
+        <span className="lab-symbol">◎</span>
+        <div>
+          <span className="eyebrow">ACCOUNT · LEARNING HUB</span>
+          <h3>Turn practice into a record you can use.</h3>
+          <p>Daily challenges, scored scenarios, quests and progress require a free learner account.</p>
+        </div>
+        <span className="button secondary">Open Learning Hub ↗</span>
+      </Link>
       <ProgressStrip />
       <div className="learning-teasers">
         <Link href="/practice/gto" className="lesson-teaser">

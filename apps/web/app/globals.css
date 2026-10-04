@@ -2085,6 +2085,21 @@ summary {
 .quest-row > b { color: var(--lime); font-size: 12px; }
 .quest-meter { height: 7px; border-radius: 99px; background: #26352b; overflow: hidden; }
 .quest-meter > span { display: block; height: 100%; border-radius: inherit; background: var(--lime); }
+.header-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
+.training-entry-banner {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 23px 25px;
+  margin: 28px 0 0;
+  border: 1px solid #4b624e;
+  border-radius: 11px;
+  background: linear-gradient(110deg, #233a2a, #1d2820);
+}
+.training-entry-banner .eyebrow { margin-bottom: 5px; }
+.training-entry-banner h3 { margin: 0; }
+.training-entry-banner p { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+.training-entry-banner > .button { margin-left: auto; white-space: nowrap; }
 .scenario-card { max-width: 850px; }
 .scenario-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 12px; }
 .scenario-card h2 { margin: 22px 0 13px; }
@@ -2100,6 +2115,17 @@ summary {
 .feedback-stats small { display: block; color: var(--muted); font-size: 9px; letter-spacing: 1px; }
 .feedback-stats b { display: block; margin-top: 4px; color: var(--lime); }
 .training-empty { max-width: 680px; }
+@media (max-width: 700px) {
+  .training-metrics, .training-action-grid { grid-template-columns: 1fr 1fr; }
+  .training-metrics > div { padding: 15px; }
+  .training-metrics strong { font-size: 19px; }
+  .quest-row { grid-template-columns: 1fr auto; }
+  .quest-meter { grid-column: 1 / -1; grid-row: 2; }
+  .training-entry-banner { align-items: flex-start; flex-wrap: wrap; padding: 20px; }
+  .training-entry-banner .lab-symbol { display: none; }
+  .training-entry-banner > .button { margin-left: 0; width: 100%; }
+  .header-actions { justify-content: flex-start; }
+}
 .gto-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 290px;

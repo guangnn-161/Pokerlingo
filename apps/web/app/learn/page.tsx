@@ -28,9 +28,10 @@ export default async function LearnPage({
             stick.
           </p>
         </div>
-        <Link href="/math" className="button secondary">
-          Try the math lab ↗
-        </Link>
+        <div className="header-actions">
+          <Link href="/training" className="button primary">Open Learning Hub ↗</Link>
+          <Link href="/math" className="button secondary">Try the math lab ↗</Link>
+        </div>
       </div>
       <nav className="tabs" aria-label="Filter lessons">
         {["All", "Poker", "Blackjack"].map((f) => (

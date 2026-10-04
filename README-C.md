@@ -15,3 +15,14 @@ This branch implements the Learning Daily remediation scope from the 2026-10-03 
 CI provisions disposable PostgreSQL, applies migrations and seed data, then runs lint, typecheck, tests and build.
 
 Rollback is forward-only: do not delete learner attempts, mastery, quest or XP records.
+
+## Learner routes
+
+The public practice tables and reading library remain available without a sign-in. The Learning Hub is a protected record of a learner's own practice:
+
+- `/training` — overview of level, XP, mastery, quests and links to active practice.
+- `/training/daily` — the selected game's Daily Challenge. The first recorded answer receives the Daily score; later answers are labelled **Practice attempt — XP unchanged**.
+- `/training/scenarios` — published, scored decision scenarios. Reference actions, EV and explanations appear only after a successful submission.
+- `/training/progress` — the learner's persisted summary and active quest progress.
+
+All scoring, EV, XP, mastery and quest decisions are calculated on the server. The browser sends only the learner's selected action and never receives a scenario solution before submission.
