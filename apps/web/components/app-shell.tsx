@@ -7,6 +7,7 @@ const navigation = [
   { href: "/practice/gto", icon: "▦", label: "GTO tables" },
   { href: "/practice/blackjack", icon: "♣", label: "Blackjack table" },
   { href: "/practice/counting", icon: "±", label: "Card counting" },
+  { href: "/training", icon: "◉", label: "Learning hub" },
   { href: "/learn", icon: "▤", label: "Learning library" },
   { href: "/math", icon: "ƒ", label: "Math lab" },
 ];
@@ -30,7 +31,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Link
               key={n.href}
               href={n.href}
-              className={`nav-item ${path === n.href || (n.href === "/learn" && path.startsWith("/learn/")) || (n.href === "/practice/poker" && (path === "/demo" || path.startsWith("/practice/poker/"))) ? "active" : ""}`}
+              className={`nav-item ${path === n.href || (n.href === "/training" && path.startsWith("/training")) || (n.href === "/learn" && path.startsWith("/learn/")) || (n.href === "/practice/poker" && (path === "/demo" || path.startsWith("/practice/poker/"))) ? "active" : ""}`}
               aria-current={path === n.href ? "page" : undefined}
             >
               <span className="nav-icon" aria-hidden="true">
@@ -65,7 +66,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <header className="topbar">
           <span className="breadcrumb">
             THE LEARNING CLUB <span>/</span>{" "}
-            {path.startsWith("/learn")
+            {path.startsWith("/training")
+              ? "LEARNING HUB"
+              : path.startsWith("/learn")
               ? "LIBRARY"
               : path === "/math"
                 ? "MATH LAB"

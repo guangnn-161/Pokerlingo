@@ -53,5 +53,6 @@ export const progressSummarySchema = z.object({
     periodStart: z.string().nullable(), progress: z.number().int(), target: z.number().int(), status: z.enum(["active","completed"])
   }).strict())
 }).strict();
+export type ProgressSummary = z.infer<typeof progressSummarySchema>;
 
 export const canonicalActionKey = (action: LearningAction) => action.size ? action.type + ":" + action.size : action.type;

@@ -48,3 +48,13 @@ export function dailyFeedback(result: DailyAttemptResult | null) {
   if (!result) return null;
   return feedback(result, result.isFirstAttempt ? "Daily result recorded" : "Practice attempt — XP unchanged");
 }
+
+export function questProgress(quest: { progress: number; target: number }) {
+  if (quest.target <= 0) return 0;
+  return Math.min(100, Math.round((quest.progress / quest.target) * 100));
+}
+
+export function questLabel(cadence: "daily" | "weekly" | "recovery", label: string) {
+  const prefix = cadence === "recovery" ? "Recovery" : cadence === "weekly" ? "Weekly" : "Daily";
+  return `${prefix} · ${label}`;
+}

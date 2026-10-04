@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { actionLabel, dailyFeedback, gameLabel, scenarioFeedback } from "./training-state";
+import { actionLabel, dailyFeedback, gameLabel, questLabel, questProgress, scenarioFeedback } from "./training-state";
 
 describe("training state", () => {
   it("makes supported game and action labels readable", () => {
@@ -26,5 +26,10 @@ describe("training state", () => {
       engineVersion: "v1",
       calculationMethod: "enumerated"
     })?.headline).toBe("Practice attempt — XP unchanged");
+  });
+
+  it("caps quest progress and gives recovery quests a clear label", () => {
+    expect(questProgress({ progress: 7, target: 5 })).toBe(100);
+    expect(questLabel("recovery", "Fix one recurring spot")).toBe("Recovery · Fix one recurring spot");
   });
 });
