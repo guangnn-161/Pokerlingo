@@ -9,7 +9,7 @@ This branch implements the Learning Daily remediation scope from the 2026-10-03 
 - Standard submissions are idempotent on (userId, submissionId) and execute attempt, mastery, quest progress and XP in one transaction.
 - Daily puzzles are scoped by game and canonical UTC date; first daily submission is replay-safe.
 - Daily/weekly quests use canonical UTC periods; recovery quests are created only for matching mistakes.
-- Database changes are represented by the Drizzle migration and journal; production builds do not run migrations.
+- Database changes are represented by the Drizzle migration and journal. Vercel applies migrations and idempotent seed data before the production web build, so the deployed app and its Learning schema advance together.
 
 ## Verification
 CI provisions disposable PostgreSQL, applies migrations and seed data, then runs lint, typecheck, tests and build.

@@ -1,5 +1,5 @@
 {
   "framework": "nextjs",
   "installCommand": "pnpm install --no-frozen-lockfile",
-  "buildCommand": "pnpm --filter @pokerlingo/web build"
+  "buildCommand": "pnpm db:migrate && pnpm db:seed && pnpm --filter @pokerlingo/web build"
 }
