@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { GameKey } from "@pokerlingo/contracts/game";
-import type { DailyAttemptResult, LearningAction, LearningPrompt } from "@pokerlingo/contracts/learning";
+import type { DailyAttemptResult, DailyGet, LearningAction, LearningPrompt } from "@pokerlingo/contracts/learning";
 import { getDaily, submitDaily, TrainingApiError } from "@/lib/training-client";
-import { actionLabel, dailyViewState, gameLabel } from "@/lib/training-state";
+import { actionLabel, dailyViewState, gameLabel, promptActions } from "@/lib/training-state";
 
-type PromptState = { prompt?: string; heroHand?: string; board?: string[]; actions?: string[] };
+type PromptState = { prompt?: string; heroHand?: string; board?: string[]; actions?: unknown };
 function toPromptState(value: unknown): PromptState {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
   const source = value as Record<string, unknown>;
@@ -15,37 +15,46 @@ function toPromptState(value: unknown): PromptState {
     prompt: typeof source.prompt === "string" ? source.prompt : undefined,
     heroHand: typeof source.heroHand === "string" ? source.heroHand : undefined,
     board: Array.isArray(source.board) ? source.board.filter((card): card is string => typeof card === "string") : undefined,
-    actions: Array.isArray(source.actions) ? source.actions.filter((action): action is string => typeof action === "string") : undefined
+    actions: source.actions
   };
 }
 const games: GameKey[] = ["nlhe", "blackjack"];
 
 export function DailyTrainer() {
   const [game, setGame] = useState<GameKey>("nlhe");
-  const [prompt, setPrompt] = useState<LearningPrompt | null>(null);
+  const [daily, setDaily] = useState<DailyGet | null>(null);
   const [result, setResult] = useState<DailyAttemptResult | null>(null);
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState(false);
+  const requestId = useRef(0);
 
   function load(nextGame = game) {
-    setLoading(true); setPrompt(null); setResult(null); setError(""); setErrorCode(null);
-    getDaily(nextGame).then((daily) => setPrompt(daily.prompt)).catch((cause: unknown) => {
+    const id = ++requestId.current;
+    setLoading(true); setDaily(null); setResult(null); setError(""); setErrorCode(null);
+    getDaily(nextGame).then((nextDaily) => {
+      if (id === requestId.current) {
+        setDaily(nextDaily);
+        setResult(nextDaily.canReveal ? nextDaily.result : null);
+      }
+    }).catch((cause: unknown) => {
+      if (id !== requestId.current) return;
       if (cause instanceof TrainingApiError && cause.status === 401) window.location.assign("/login");
       else if (cause instanceof TrainingApiError && cause.code === "DAILY_NOT_FOUND") setErrorCode(cause.code);
       else setError("Today’s challenge could not be loaded. Please try again.");
-    }).finally(() => setLoading(false));
+    }).finally(() => { if (id === requestId.current) setLoading(false); });
   }
   useEffect(() => { load(game); }, [game]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const prompt: LearningPrompt | null = daily?.prompt ?? null;
   const state = useMemo(() => prompt ? toPromptState(prompt.promptState) : {}, [prompt]);
   const view = dailyViewState({ errorCode, result });
-  const actions: LearningAction[] = (state.actions ?? []).map((type) => ({ type }));
+  const actions: LearningAction[] = promptActions(state.actions);
   async function choose(action: LearningAction) {
-    if (!prompt || pending || result) return;
+    if (!daily || !prompt || pending || result) return;
     setPending(true); setError("");
-    try { setResult(await submitDaily({ game, action, submissionId: crypto.randomUUID() })); }
+    try { setResult(await submitDaily({ game: daily.game, action, submissionId: crypto.randomUUID() })); }
     catch (cause) {
       if (cause instanceof TrainingApiError && cause.status === 401) window.location.assign("/login");
       else setError(cause instanceof TrainingApiError && cause.code === "ACTION_NOT_SCORABLE" ? "That action is unavailable for this model. Choose another action." : "Your answer could not be recorded. Please try again.");
@@ -63,7 +72,7 @@ export function DailyTrainer() {
       <div className="scenario-meta"><span className="pill">{gameLabel(game)}</span><span>Daily challenge</span></div><h2>{prompt.title}</h2>
       {state.heroHand && <p className="scenario-hand"><strong>Your hand</strong> {state.heroHand}</p>}{state.board?.length ? <p className="scenario-hand"><strong>Board</strong> {state.board.join(" ")}</p> : null}
       <p className="scenario-prompt">{state.prompt ?? "Read the situation and choose the action with the best expected value."}</p>
-      {view.mode === "ready" && <div className="scenario-actions" role="group" aria-label="Choose your Daily action">{actions.map((action) => <button key={action.type} className="button primary" type="button" disabled={pending} onClick={() => choose(action)}>{pending ? "Recording…" : actionLabel(action)}</button>)}</div>}
+      {view.mode === "ready" && <div className="scenario-actions" role="group" aria-label="Choose your Daily action">{actions.map((action) => <button key={`${action.type}:${action.size ?? ""}`} className="button primary" type="button" disabled={pending} onClick={() => choose(action)}>{pending ? "Recording…" : actionLabel(action)}</button>)}</div>}
       {view.mode === "ready" && !actions.length && <p className="error-message" role="alert">This Daily has no available actions. Try a scenario instead.</p>}
       {view.feedback && <section className="training-feedback" aria-live="polite"><p className="eyebrow">DAILY RESULT</p><h3>{view.feedback.headline}</h3><div className="feedback-stats"><span><small>SCORE</small><b>{view.feedback.score}/100</b></span><span><small>EV LOSS</small><b>{view.feedback.evLossBb.toFixed(2)} BB</b></span><span><small>REFERENCE</small><b>{view.feedback.bestAction}</b></span></div><p>{view.feedback.explanation}</p>{view.feedback.assumptions.length > 0 && <p className="quiet">Assumptions: {view.feedback.assumptions.join(" · ")}</p>}<button className="button secondary" type="button" onClick={practiceAgain}>Practice another action →</button></section>}
     </section>}

@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { GameKey } from "@pokerlingo/contracts/game";
 import type { AttemptResult, LearningAction, LearningPrompt } from "@pokerlingo/contracts/learning";
 import { getScenarios, submitScenario, TrainingApiError } from "@/lib/training-client";
-import { actionLabel, gameLabel, scenarioViewState } from "@/lib/training-state";
+import { actionLabel, gameLabel, promptActions, scenarioViewState } from "@/lib/training-state";
 
-type PromptState = { prompt?: string; heroHand?: string; board?: string[]; actions?: string[] };
+type PromptState = { prompt?: string; heroHand?: string; board?: string[]; actions?: unknown };
 function promptState(value: unknown): PromptState {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
   const source = value as Record<string, unknown>;
@@ -14,7 +14,7 @@ function promptState(value: unknown): PromptState {
     prompt: typeof source.prompt === "string" ? source.prompt : undefined,
     heroHand: typeof source.heroHand === "string" ? source.heroHand : undefined,
     board: Array.isArray(source.board) ? source.board.filter((card): card is string => typeof card === "string") : undefined,
-    actions: Array.isArray(source.actions) ? source.actions.filter((action): action is string => typeof action === "string") : undefined
+    actions: source.actions
   };
 }
 
@@ -28,21 +28,26 @@ export function ScenarioTrainer() {
   const [pending, setPending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const requestId = useRef(0);
 
   function load(nextGame = game) {
+    const id = ++requestId.current;
     setLoading(true); setError(""); setResult(null); setIndex(0);
-    getScenarios(nextGame).then(setScenarios).catch((cause: unknown) => {
+    getScenarios(nextGame).then((nextScenarios) => {
+      if (id === requestId.current) setScenarios(nextScenarios);
+    }).catch((cause: unknown) => {
+      if (id !== requestId.current) return;
       if (cause instanceof TrainingApiError && cause.status === 401) window.location.assign("/login");
       else setError("Scenarios could not be loaded. Please try again.");
       setScenarios([]);
-    }).finally(() => setLoading(false));
+    }).finally(() => { if (id === requestId.current) setLoading(false); });
   }
   useEffect(() => { load(game); }, [game]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const scenario = scenarios[index] ?? null;
   const state = useMemo(() => scenario ? promptState(scenario.promptState) : {}, [scenario]);
   const view = scenarioViewState({ pending, result });
-  const actions: LearningAction[] = (state.actions ?? []).map((type) => ({ type }));
+  const actions: LearningAction[] = promptActions(state.actions);
 
   async function choose(action: LearningAction) {
     if (!scenario || view.actionsDisabled) return;
@@ -74,7 +79,7 @@ export function ScenarioTrainer() {
       {state.board?.length ? <p className="scenario-hand"><strong>Board</strong> {state.board.join(" ")}</p> : null}
       <p className="scenario-prompt">{state.prompt ?? "Read the situation and choose the action with the best expected value."}</p>
       <div className="scenario-actions" role="group" aria-label="Choose your action">
-        {actions.map((action) => <button key={action.type} type="button" className="button primary" aria-pressed={false} disabled={view.actionsDisabled} onClick={() => choose(action)}>{pending ? "Recording…" : actionLabel(action)}</button>)}
+        {actions.map((action) => <button key={`${action.type}:${action.size ?? ""}`} type="button" className="button primary" aria-pressed={false} disabled={view.actionsDisabled} onClick={() => choose(action)}>{pending ? "Recording…" : actionLabel(action)}</button>)}
       </div>
       {!actions.length && <p className="error-message" role="alert">This scenario has no available actions. Please choose another one.</p>}
       {view.feedback && <section className="training-feedback" aria-live="polite"><p className="eyebrow">RESULT</p><h3>{view.feedback.headline}</h3><div className="feedback-stats"><span><small>SCORE</small><b>{view.feedback.score}/100</b></span><span><small>EV LOSS</small><b>{view.feedback.evLossBb.toFixed(2)} BB</b></span><span><small>REFERENCE</small><b>{view.feedback.bestAction}</b></span></div><p>{view.feedback.explanation}</p>{view.feedback.assumptions.length > 0 && <p className="quiet">Assumptions: {view.feedback.assumptions.join(" · ")}</p>}<button className="button secondary" type="button" onClick={nextScenario}>Try another scenario →</button></section>}

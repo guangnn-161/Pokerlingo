@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { and, eq, lte, gt } from "drizzle-orm";
 import { db } from "@pokerlingo/db";
 import { dailyPuzzleAttempts,dailyPuzzles,scenarioRevisions,xpLedger } from "@pokerlingo/db/schema";
-import { dailyGetSchema,dailyPostRequestSchema } from "@pokerlingo/contracts/learning";
+import { actionSchema,dailyGetSchema,dailyPostRequestSchema } from "@pokerlingo/contracts/learning";
 import { gameKeySchema } from "@pokerlingo/contracts/game";
 import { getCurrentUser } from "@/lib/current-user";
 import { acquireLearningLock,calculateScore,mistakeTagFor,promptFromRevision,selectedEvForAction,solutionFromRevision,updateQuests } from "@/lib/learning";
@@ -16,7 +16,14 @@ export async function GET(request:Request){
  if(!p)return NextResponse.json({error:"DAILY_NOT_FOUND"},{status:404});
  const [r]=await db.select().from(scenarioRevisions).where(eq(scenarioRevisions.id,p.revisionId)).limit(1); if(!r)return NextResponse.json({error:"REVISION_NOT_FOUND"},{status:404});
  const [first]=await db.select().from(dailyPuzzleAttempts).where(and(eq(dailyPuzzleAttempts.puzzleId,p.id),eq(dailyPuzzleAttempts.userId,user.id),eq(dailyPuzzleAttempts.isFirstAttempt,1))).limit(1);
- const response={puzzleId:p.id,puzzleDate:p.puzzleDate,game:p.game,prompt:promptFromRevision(r),hasSubmitted:!!first,canReveal:!!first};
+ let selectedAction=null;
+ if(first){
+  try { const parsedAction=actionSchema.safeParse(JSON.parse(first.selectedActionJson)); selectedAction=parsedAction.success?parsedAction.data:null; }
+  catch { selectedAction=null; }
+ }
+ const s=solutionFromRevision(r);
+ const result=first&&selectedAction?{attemptId:first.id,puzzleId:p.id,isFirstAttempt:true,selectedAction,bestAction:s.bestAction,evLossBb:Number(first.evLoss),score:first.score,mistakeTag:Number(first.evLoss)>0?mistakeTagFor(r.topic,selectedAction.type):null,explanationMd:s.explanationMd,assumptions:s.assumptions,engineVersion:s.engineVersion,calculationMethod:s.calculationMethod}:null;
+ const response={puzzleId:p.id,puzzleDate:p.puzzleDate,game:p.game,prompt:promptFromRevision(r),hasSubmitted:!!first,canReveal:!!result,result};
  return NextResponse.json({data:dailyGetSchema.parse(response)},{headers:{"Cache-Control":"no-store"}});
 }
 export async function POST(request:Request){

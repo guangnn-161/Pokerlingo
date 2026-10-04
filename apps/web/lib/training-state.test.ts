@@ -1,10 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { actionLabel, dailyFeedback, dailyViewState, gameLabel, questLabel, questProgress, scenarioFeedback, scenarioViewState } from "./training-state";
+import { actionLabel, dailyFeedback, dailyViewState, gameLabel, promptActions, questLabel, questProgress, scenarioFeedback, scenarioViewState } from "./training-state";
 
 describe("training state", () => {
   it("makes supported game and action labels readable", () => {
     expect(gameLabel("nlhe")).toBe("NL Hold'em");
     expect(actionLabel({ type: "raise", size: "2.5x" })).toBe("Raise to 2.5x");
+  });
+
+  it("preserves optional action sizing from a safe prompt payload", () => {
+    expect(promptActions(["fold", { type: "raise", size: "2.5x" }, { type: 10 }])).toEqual([
+      { type: "fold" }, { type: "raise", size: "2.5x" }
+    ]);
   });
 
   it("keeps scenario solution feedback absent before a result exists", () => {

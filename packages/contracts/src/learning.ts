@@ -28,16 +28,6 @@ export const attemptResultSchema = z.object({
 }).strict();
 export type AttemptResult = z.infer<typeof attemptResultSchema>;
 
-export const dailyGetSchema = z.object({
-  puzzleId: z.string().uuid(), puzzleDate: z.string(), game: gameKeySchema, prompt: learningPromptSchema,
-  hasSubmitted: z.boolean(), canReveal: z.boolean()
-}).strict();
-
-export const dailyPostRequestSchema = z.object({
-  game: gameKeySchema, action: actionSchema, submissionId: z.string().min(8).max(200), durationMs: z.number().int().min(0).max(3600000).optional()
-}).strict();
-export type DailyPostRequest = z.infer<typeof dailyPostRequestSchema>;
-
 export const dailyAttemptResultSchema = z.object({
   attemptId: z.string().uuid(), puzzleId: z.string().uuid(), isFirstAttempt: z.boolean(),
   selectedAction: actionSchema, bestAction: actionSchema, evLossBb: z.number(), score: z.number().int().min(0).max(100),
@@ -45,6 +35,17 @@ export const dailyAttemptResultSchema = z.object({
   engineVersion: z.string(), calculationMethod: z.string()
 }).strict();
 export type DailyAttemptResult = z.infer<typeof dailyAttemptResultSchema>;
+
+export const dailyGetSchema = z.object({
+  puzzleId: z.string().uuid(), puzzleDate: z.string(), game: gameKeySchema, prompt: learningPromptSchema,
+  hasSubmitted: z.boolean(), canReveal: z.boolean(), result: dailyAttemptResultSchema.nullable()
+}).strict();
+export type DailyGet = z.infer<typeof dailyGetSchema>;
+
+export const dailyPostRequestSchema = z.object({
+  game: gameKeySchema, action: actionSchema, submissionId: z.string().min(8).max(200), durationMs: z.number().int().min(0).max(3600000).optional()
+}).strict();
+export type DailyPostRequest = z.infer<typeof dailyPostRequestSchema>;
 
 export const progressSummarySchema = z.object({
   xp: z.number(), level: z.number().int(), mastery: z.number(), practiced: z.number().int(), averageEvLossBb: z.number(),

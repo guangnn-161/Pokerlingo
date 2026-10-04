@@ -18,6 +18,18 @@ export function actionLabel(action: LearningAction) {
   return action.size ? `${verb} to ${action.size}` : verb;
 }
 
+export function promptActions(value: unknown): LearningAction[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((candidate): LearningAction[] => {
+    if (typeof candidate === "string" && candidate.trim()) return [{ type: candidate }];
+    if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) return [];
+    const source = candidate as Record<string, unknown>;
+    if (typeof source.type !== "string" || !source.type.trim()) return [];
+    if (source.size !== undefined && (typeof source.size !== "string" || !source.size.trim())) return [];
+    return [{ type: source.type, ...(typeof source.size === "string" ? { size: source.size } : {}) }];
+  });
+}
+
 export type Feedback = {
   headline: string;
   score: number;
