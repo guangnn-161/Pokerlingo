@@ -44,6 +44,10 @@ export function scenarioFeedback(result: AttemptResult | null) {
   return result ? feedback(result, result.evLossBb === 0 ? "Best action found" : "Review the EV gap") : null;
 }
 
+export function scenarioViewState({ pending, result }: { pending: boolean; result: AttemptResult | null }) {
+  return { actionsDisabled: pending || result !== null, feedback: scenarioFeedback(result) };
+}
+
 export function dailyFeedback(result: DailyAttemptResult | null) {
   if (!result) return null;
   return feedback(result, result.isFirstAttempt ? "Daily result recorded" : "Practice attempt — XP unchanged");

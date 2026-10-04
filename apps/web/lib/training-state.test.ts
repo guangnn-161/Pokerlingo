@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { actionLabel, dailyFeedback, gameLabel, questLabel, questProgress, scenarioFeedback } from "./training-state";
+import { actionLabel, dailyFeedback, gameLabel, questLabel, questProgress, scenarioFeedback, scenarioViewState } from "./training-state";
 
 describe("training state", () => {
   it("makes supported game and action labels readable", () => {
@@ -31,5 +31,15 @@ describe("training state", () => {
   it("caps quest progress and gives recovery quests a clear label", () => {
     expect(questProgress({ progress: 7, target: 5 })).toBe(100);
     expect(questLabel("recovery", "Fix one recurring spot")).toBe("Recovery · Fix one recurring spot");
+  });
+
+  it("derives safe scenario submission states", () => {
+    expect(scenarioViewState({ pending: false, result: null })).toMatchObject({ actionsDisabled: false, feedback: null });
+    expect(scenarioViewState({ pending: true, result: null })).toMatchObject({ actionsDisabled: true, feedback: null });
+    expect(scenarioViewState({ pending: false, result: {
+      attemptId: "00000000-0000-4000-8000-000000000003", revisionId: "00000000-0000-4000-8000-000000000004",
+      selectedAction: { type: "call" }, bestAction: { type: "call" }, evLossBb: 0, score: 100, mistakeTag: null,
+      explanationMd: "Best action.", assumptions: [], engineVersion: "v1", calculationMethod: "enumerated"
+    } })).toMatchObject({ actionsDisabled: true, feedback: { score: 100 } });
   });
 });

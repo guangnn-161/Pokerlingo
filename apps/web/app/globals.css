@@ -2085,6 +2085,21 @@ summary {
 .quest-row > b { color: var(--lime); font-size: 12px; }
 .quest-meter { height: 7px; border-radius: 99px; background: #26352b; overflow: hidden; }
 .quest-meter > span { display: block; height: 100%; border-radius: inherit; background: var(--lime); }
+.scenario-card { max-width: 850px; }
+.scenario-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 12px; }
+.scenario-card h2 { margin: 22px 0 13px; }
+.scenario-hand { color: #dce7ce !important; }
+.scenario-hand strong { color: var(--lime); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; margin-right: 10px; }
+.scenario-prompt { color: var(--ink) !important; font-size: 16px; line-height: 1.65; margin: 24px 0 !important; }
+.scenario-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.scenario-actions .button { min-width: 120px; }
+.training-feedback { margin-top: 25px; padding-top: 22px; border-top: 1px solid var(--line); }
+.training-feedback h3 { margin: 0 0 16px; }
+.feedback-stats { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 17px; }
+.feedback-stats span { min-width: 120px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: #1d2820; }
+.feedback-stats small { display: block; color: var(--muted); font-size: 9px; letter-spacing: 1px; }
+.feedback-stats b { display: block; margin-top: 4px; color: var(--lime); }
+.training-empty { max-width: 680px; }
 .gto-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 290px;
