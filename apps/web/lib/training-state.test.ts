@@ -1,0 +1,30 @@
+import { describe, expect, it } from "vitest";
+import { actionLabel, dailyFeedback, gameLabel, scenarioFeedback } from "./training-state";
+
+describe("training state", () => {
+  it("makes supported game and action labels readable", () => {
+    expect(gameLabel("nlhe")).toBe("NL Hold'em");
+    expect(actionLabel({ type: "raise", size: "2.5x" })).toBe("Raise to 2.5x");
+  });
+
+  it("keeps scenario solution feedback absent before a result exists", () => {
+    expect(scenarioFeedback(null)).toBeNull();
+  });
+
+  it("marks a repeat Daily answer as practice instead of a new XP award", () => {
+    expect(dailyFeedback({
+      attemptId: "00000000-0000-4000-8000-000000000001",
+      puzzleId: "00000000-0000-4000-8000-000000000002",
+      isFirstAttempt: false,
+      selectedAction: { type: "fold" },
+      bestAction: { type: "call" },
+      evLossBb: 0.35,
+      score: 82,
+      mistakeTag: null,
+      explanationMd: "Calling protects the range.",
+      assumptions: ["100bb effective"],
+      engineVersion: "v1",
+      calculationMethod: "enumerated"
+    })?.headline).toBe("Practice attempt — XP unchanged");
+  });
+});
