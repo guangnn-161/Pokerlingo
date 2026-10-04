@@ -53,6 +53,11 @@ export function dailyFeedback(result: DailyAttemptResult | null) {
   return feedback(result, result.isFirstAttempt ? "Daily result recorded" : "Practice attempt — XP unchanged");
 }
 
+export function dailyViewState({ errorCode, result }: { errorCode: string | null; result: DailyAttemptResult | null }) {
+  if (errorCode === "DAILY_NOT_FOUND") return { mode: "empty" as const, feedback: null };
+  return result ? { mode: "result" as const, feedback: dailyFeedback(result) } : { mode: "ready" as const, feedback: null };
+}
+
 export function questProgress(quest: { progress: number; target: number }) {
   if (quest.target <= 0) return 0;
   return Math.min(100, Math.round((quest.progress / quest.target) * 100));

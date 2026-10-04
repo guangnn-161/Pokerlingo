@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { actionLabel, dailyFeedback, gameLabel, questLabel, questProgress, scenarioFeedback, scenarioViewState } from "./training-state";
+import { actionLabel, dailyFeedback, dailyViewState, gameLabel, questLabel, questProgress, scenarioFeedback, scenarioViewState } from "./training-state";
 
 describe("training state", () => {
   it("makes supported game and action labels readable", () => {
@@ -41,5 +41,14 @@ describe("training state", () => {
       selectedAction: { type: "call" }, bestAction: { type: "call" }, evLossBb: 0, score: 100, mistakeTag: null,
       explanationMd: "Best action.", assumptions: [], engineVersion: "v1", calculationMethod: "enumerated"
     } })).toMatchObject({ actionsDisabled: true, feedback: { score: 100 } });
+  });
+
+  it("maps a missing Daily puzzle to an empty state and preserves first-result scoring", () => {
+    expect(dailyViewState({ errorCode: "DAILY_NOT_FOUND", result: null })).toMatchObject({ mode: "empty", feedback: null });
+    expect(dailyViewState({ errorCode: null, result: {
+      attemptId: "00000000-0000-4000-8000-000000000005", puzzleId: "00000000-0000-4000-8000-000000000006", isFirstAttempt: true,
+      selectedAction: { type: "stand" }, bestAction: { type: "stand" }, evLossBb: 0, score: 100, mistakeTag: null,
+      explanationMd: "Stand.", assumptions: [], engineVersion: "v1", calculationMethod: "enumerated"
+    } })).toMatchObject({ mode: "result", feedback: { headline: "Daily result recorded" } });
   });
 });
