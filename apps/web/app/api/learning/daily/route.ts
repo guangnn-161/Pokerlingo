@@ -6,7 +6,7 @@ import { dailyGetSchema,dailyPostRequestSchema } from "@pokerlingo/contracts/lea
 import { gameKeySchema } from "@pokerlingo/contracts/game";
 import { getCurrentUser } from "@/lib/current-user";
 import { acquireLearningLock,calculateScore,mistakeTagFor,promptFromRevision,selectedEvForAction,solutionFromRevision,updateQuests } from "@/lib/learning";
-import { utcDateKey } from "@/lib/daily-puzzle";
+import { dailyAttemptKind, utcDateKey } from "@/lib/daily-puzzle";
 export async function GET(request:Request){
  const user=await getCurrentUser(); if(!user)return NextResponse.json({error:"UNAUTHORIZED"},{status:401});
  const game=new URL(request.url).searchParams.get("game"); if(!game)return NextResponse.json({error:"GAME_REQUIRED"},{status:400});
@@ -30,15 +30,17 @@ export async function POST(request:Request){
   const [same]=await tx.select().from(dailyPuzzleAttempts).where(and(eq(dailyPuzzleAttempts.puzzleId,p.id),eq(dailyPuzzleAttempts.userId,user.id),eq(dailyPuzzleAttempts.submissionId,parsed.data.submissionId))).limit(1);
   if(same)return {p,same:true,row:same,tag:null};
   const [first]=await tx.select().from(dailyPuzzleAttempts).where(and(eq(dailyPuzzleAttempts.puzzleId,p.id),eq(dailyPuzzleAttempts.userId,user.id),eq(dailyPuzzleAttempts.isFirstAttempt,1))).limit(1);
-  if(first)return {p,same:false,row:first,tag:null};
+  const isFirstAttempt=dailyAttemptKind(Boolean(first));
   const [r]=await tx.select().from(scenarioRevisions).where(eq(scenarioRevisions.id,p.revisionId)).limit(1);if(!r)throw new Error("REVISION_NOT_FOUND");
   const s=solutionFromRevision(r), selectedEv=selectedEvForAction(s.selectedEvs,parsed.data.action);
   if(selectedEv===null)throw new Error("ACTION_NOT_SCORABLE");
   const loss=Math.max(0,s.referenceEvBb-selectedEv),score=calculateScore(loss),tag=loss>0?mistakeTagFor(r.topic,parsed.data.action.type):null;
-  const [row]=await tx.insert(dailyPuzzleAttempts).values({puzzleId:p.id,userId:user.id,submissionId:parsed.data.submissionId,evLoss:String(loss),score,durationMs:parsed.data.durationMs??0,isFirstAttempt:1,selectedActionJson:JSON.stringify(parsed.data.action)}).returning();
+  const [row]=await tx.insert(dailyPuzzleAttempts).values({puzzleId:p.id,userId:user.id,submissionId:parsed.data.submissionId,evLoss:String(loss),score,durationMs:parsed.data.durationMs??0,isFirstAttempt,selectedActionJson:JSON.stringify(parsed.data.action)}).returning();
   if(!row)throw new Error("DAILY_ATTEMPT_PERSIST_FAILED");
-  await tx.insert(xpLedger).values({userId:user.id,sourceType:"daily",sourceId:row.id,xpDelta:score>=80?10:5,idempotencyKey:"daily:"+row.id}).onConflictDoNothing({target:xpLedger.idempotencyKey});
-  await updateQuests(tx,user.id,{score,mistakeTag:tag},now,row.id);
+  if(isFirstAttempt){
+   await tx.insert(xpLedger).values({userId:user.id,sourceType:"daily",sourceId:row.id,xpDelta:score>=80?10:5,idempotencyKey:"daily:"+row.id}).onConflictDoNothing({target:xpLedger.idempotencyKey});
+   await updateQuests(tx,user.id,{score,mistakeTag:tag,topic:r.topic},now,row.id);
+  }
   return {p,same:false,row,tag};
  });
  if(!result.row)return NextResponse.json({error:"DAILY_ATTEMPT_PERSIST_FAILED"},{status:500});

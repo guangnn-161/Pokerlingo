@@ -16,6 +16,12 @@ export function recoveryQuestPeriodStartFor(now=new Date()) {
 export function selectedEvForAction(selectedEvs:Record<string,number>, action:LearningAction) {
   return selectedEvs[canonicalActionKey(action)] ?? null;
 }
+export function rewardEligibleForRevisionAttempt(hasPreviousAttempt:boolean) {
+  return !hasPreviousAttempt;
+}
+export function recoveryQuestProgressDelta(isTriggeringMistake:boolean, isQualifyingReview:boolean) {
+  return !isTriggeringMistake && isQualifyingReview ? 1 : 0;
+}
 export async function acquireLearningLock(tx:any, userId:string) {
   await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`learning:${userId}`}))`);
 }
@@ -32,23 +38,36 @@ export function mistakeTagFor(topic:string, actionType:string) {
 }
 type Solution=LearningSolution;
 const parseSolution=(x:string)=>learningSolutionSchema.parse(JSON.parse(x));
-const parseRules=(x:string)=>JSON.parse(x) as {type?:string;target?:number;tag?:string};
+const parseRules=(x:string)=>JSON.parse(x) as {type?:string;target?:number;tag?:string;topic?:string};
 const json=(x:unknown)=>JSON.stringify(x);
 
-async function ensureQuest(tx:any,userId:string,template:any,now:Date) {
+async function ensureQuest(tx:any,userId:string,template:any,now:Date,recoveryTopic?:string) {
   const period=template.cadence==="recovery" ? recoveryQuestPeriodStartFor(now) : periodStartFor(template.cadence,now);
   if(!period) return null;
   const existing=await tx.select().from(userQuests).where(and(eq(userQuests.userId,userId),eq(userQuests.templateId,template.id),eq(userQuests.periodStart,period))).limit(1);
   if(existing[0]) return existing[0];
   const rules=parseRules(template.rulesJson);
-  const [row]=await tx.insert(userQuests).values({userId,templateId:template.id,periodStart:period,progressJson:json({progress:0,target:rules.target??1}),status:"active"}).returning();
+  const [row]=await tx.insert(userQuests).values({userId,templateId:template.id,periodStart:period,progressJson:json({progress:0,target:rules.target??1,recoveryTopic}),status:"active"}).returning();
   return row;
 }
-export async function updateQuests(tx:any,userId:string,args:{score:number;mistakeTag:string|null},now:Date,sourceId:string) {
+export async function updateQuests(tx:any,userId:string,args:{score:number;mistakeTag:string|null;topic:string},now:Date,sourceId:string) {
   const templates=await tx.select().from(questTemplates).where(eq(questTemplates.active,1));
   for(const template of templates){
     const rules=parseRules(template.rulesJson);
-    if(template.cadence==="recovery" && rules.tag!==args.mistakeTag) continue;
+    if(template.cadence==="recovery") {
+      const matchesMistake=rules.tag===args.mistakeTag&&(!rules.topic||rules.topic===args.topic);
+      if(matchesMistake){ await ensureQuest(tx,userId,template,now,args.topic); continue; }
+      if(args.mistakeTag!==null||args.score<80) continue;
+      const period=recoveryQuestPeriodStartFor(now);
+      const [recovery]=await tx.select().from(userQuests).where(and(eq(userQuests.userId,userId),eq(userQuests.templateId,template.id),eq(userQuests.periodStart,period))).limit(1);
+      if(!recovery||recovery.status==="completed") continue;
+      const old=JSON.parse(recovery.progressJson) as {progress:number;target:number;recoveryTopic?:string};
+      if(old.recoveryTopic&&old.recoveryTopic!==args.topic) continue;
+      const delta=recoveryQuestProgressDelta(false,true), progress=Math.min(old.target,old.progress+delta), complete=progress>=old.target;
+      await tx.update(userQuests).set({progressJson:json({...old,progress}),status:complete?"completed":"active",completedAt:complete?now:recovery.completedAt}).where(eq(userQuests.id,recovery.id));
+      if(complete) await tx.insert(xpLedger).values({userId,sourceType:"quest",sourceId:recovery.id,xpDelta:template.xpReward,idempotencyKey:"quest:"+recovery.id}).onConflictDoNothing({target:xpLedger.idempotencyKey});
+      continue;
+    }
     const q=await ensureQuest(tx,userId,template,now);
     if(!q) continue;
     if(q.status==="completed") continue;
@@ -79,13 +98,16 @@ export async function submitLearningAttempt(input:{userId:string;revisionId:stri
     const selectedEvBb=selectedEvForAction(s.selectedEvs,input.action);
     if(typeof selectedEvBb!=="number") throw new Error("ACTION_NOT_SCORABLE");
     const loss=Math.max(0,s.referenceEvBb-selectedEvBb), score=calculateScore(loss), mistake=loss>0?mistakeTagFor(rev.topic,input.action.type):null;
+    const [previousRevisionAttempt]=await tx.select({id:attempts.id}).from(attempts).where(and(eq(attempts.userId,input.userId),eq(attempts.revisionId,rev.id))).limit(1);
     const [row]=await tx.insert(attempts).values({userId:input.userId,revisionId:rev.id,submissionId:input.submissionId,selectedActionJson:json(input.action),evLossBb:String(loss),score,mistakeTag:mistake,durationMs:input.durationMs??0}).onConflictDoNothing({target:[attempts.userId,attempts.submissionId]}).returning();
     if(!row){ const [winner]=await tx.select().from(attempts).where(and(eq(attempts.userId,input.userId),eq(attempts.submissionId,input.submissionId))).limit(1); if(!winner) throw new Error("ATTEMPT_PERSIST_FAILED"); const [winnerRev]=await tx.select().from(scenarioRevisions).where(eq(scenarioRevisions.id,winner.revisionId)).limit(1); if(!winnerRev) throw new Error("REVISION_NOT_FOUND"); return resultFrom(winner,winnerRev); }
+    if(rewardEligibleForRevisionAttempt(Boolean(previousRevisionAttempt))){
     const [m]=await tx.select().from(masteryScores).where(and(eq(masteryScores.userId,input.userId),eq(masteryScores.topicKey,rev.topic))).limit(1);
     const next=m?Math.round(m.score*.8+score*.2):score;
     await tx.insert(masteryScores).values({userId:input.userId,topicKey:rev.topic,score:next,sampleCount:1}).onConflictDoUpdate({target:[masteryScores.userId,masteryScores.topicKey],set:{score:next,sampleCount:sql`${masteryScores.sampleCount}+1`,updatedAt:new Date()}});
     await tx.insert(xpLedger).values({userId:input.userId,sourceType:"attempt",sourceId:row.id,xpDelta:score>=80?10:5,idempotencyKey:"attempt:"+row.id}).onConflictDoNothing({target:xpLedger.idempotencyKey});
-    await updateQuests(tx,input.userId,{score,mistakeTag:mistake},new Date(),row.id);
+    await updateQuests(tx,input.userId,{score,mistakeTag:mistake,topic:rev.topic},new Date(),row.id);
+    }
     return resultFrom(row,rev);
   });
 }

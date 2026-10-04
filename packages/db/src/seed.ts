@@ -25,7 +25,7 @@ async function main() {
   const quests = [
     {id:"daily-practice",cadence:"daily" as const,key:"daily_practice",rulesJson:JSON.stringify({type:"attempts",target:3}),xpReward:15},
     {id:"weekly-mastery",cadence:"weekly" as const,key:"weekly_mastery",rulesJson:JSON.stringify({type:"score",target:200}),xpReward:40},
-    {id:"recovery-preflop",cadence:"recovery" as const,key:"recovery_preflop",rulesJson:JSON.stringify({type:"mistake",tag:"overfold",target:1}),xpReward:20}
+    {id:"recovery-preflop",cadence:"recovery" as const,key:"recovery_preflop",rulesJson:JSON.stringify({type:"recovery",tag:"overfold",topic:"preflop",target:1}),xpReward:20}
   ];
   for (const q of quests) await db.insert(questTemplates).values(q).onConflictDoNothing();
   console.log("Seeded learning fixtures for", user?.email);

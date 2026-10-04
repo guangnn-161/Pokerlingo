@@ -5,7 +5,7 @@ import { scenarioRevisions } from "./schema";
 describe("learning remediation migration",()=>{
  it("creates immutable revisions and enforces scenario/version uniqueness",async()=>{
   const scenarioId="migration-test-"+Date.now();
-  const base={scenarioId,game:"nlhe",title:"test",topic:"test",difficulty:1,rulesVersion:"v1",promptJson:"{}",solutionJson:"{}",tagsJson:"[]",status:"published" as const};
+  const base={scenarioId,game:"nlhe",title:"test",topic:"test",difficulty:1,rulesVersion:"v1",promptJson:"{}",solutionJson:"{}",tagsJson:"[]",status:"draft" as const};
   const [a]=await db.insert(scenarioRevisions).values({...base,version:1}).returning();
   const [b]=await db.insert(scenarioRevisions).values({...base,version:2}).returning();
   expect(a).toBeDefined();

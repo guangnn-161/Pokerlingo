@@ -3,6 +3,7 @@ import { db } from "@pokerlingo/db";
 import { dailyPuzzles, scenarioRevisions } from "@pokerlingo/db/schema";
 import { type GameKey } from "@pokerlingo/contracts/game";
 export function utcDateKey(now=new Date()){return now.toISOString().slice(0,10);}
+export function dailyAttemptKind(hasFirstAttempt:boolean){return hasFirstAttempt?0:1;}
 export async function publishDailyPuzzle(input:{game:GameKey;scenarioRevisionId:string;publishAt:Date;closeAt:Date}){
  if(input.closeAt<=input.publishAt)throw new Error("INVALID_WINDOW");
  const [r]=await db.select().from(scenarioRevisions).where(and(eq(scenarioRevisions.id,input.scenarioRevisionId),eq(scenarioRevisions.status,"published"))).limit(1);

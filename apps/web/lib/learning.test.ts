@@ -1,6 +1,6 @@
 import {describe,it,expect} from "vitest";
 import {canonicalActionKey} from "@pokerlingo/contracts/learning";
-import {periodStartFor,recoveryQuestPeriodStartFor,selectedEvForAction} from "./learning";
+import {periodStartFor,recoveryQuestPeriodStartFor,recoveryQuestProgressDelta,rewardEligibleForRevisionAttempt,selectedEvForAction} from "./learning";
 describe("learning contracts",()=>{
  it("keeps action sizes distinct",()=>{expect(canonicalActionKey({type:"raise",size:"2.5x"})).not.toBe(canonicalActionKey({type:"raise",size:"4x"}));});
  it("uses canonical UTC periods",()=>{
@@ -15,5 +15,13 @@ describe("learning contracts",()=>{
  });
  it("does not score a sized action using an unsized fallback",()=>{
   expect(selectedEvForAction({raise:1.5,"raise:2.5x":2},{type:"raise",size:"4x"})).toBeNull();
+ });
+ it("rewards only the first attempt on a scenario revision",()=>{
+  expect(rewardEligibleForRevisionAttempt(false)).toBe(true);
+  expect(rewardEligibleForRevisionAttempt(true)).toBe(false);
+ });
+ it("creates a recovery quest from a mistake without completing it",()=>{
+  expect(recoveryQuestProgressDelta(true,false)).toBe(0);
+  expect(recoveryQuestProgressDelta(false,true)).toBe(1);
  });
 });
